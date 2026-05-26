@@ -1236,10 +1236,11 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   border: 1.5px solid var(--paper-3);
   border-radius: var(--r-lg);
   padding: var(--s-4);
+  padding-right: 8px;
   cursor: pointer;
   transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: var(--s-3);
   align-items: center;
 }
@@ -1255,31 +1256,40 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   background: var(--coral-tint);
 }
 .receita-card-acoes {
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  grid-column: 3;
   display: flex;
-  gap: 2px;
-  opacity: 0.55;
-  transition: opacity 0.2s var(--ease-out);
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 4px;
+  padding-left: 8px;
+  border-left: 1px solid var(--paper-3);
+  align-self: stretch;
+  justify-content: center;
 }
-.receita-card { position: relative; }
-.receita-card:hover .receita-card-acoes { opacity: 1; }
 .receita-card-acoes button {
-  background: transparent;
-  border: none;
-  color: var(--ink-3);
-  padding: 6px;
-  border-radius: 6px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  color: var(--ink-2);
+  padding: 8px;
+  border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: auto;
+  min-height: 36px;
+  min-width: 36px;
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
 }
-.receita-card-acoes button:hover {
+.receita-card-acoes button:hover,
+.receita-card-acoes button:active {
+  background: var(--coral-tint);
   color: var(--bordo);
-  background: var(--paper-2);
+  border-color: var(--coral-soft);
+}
+.receita-card.editing .receita-card-acoes { border-left-color: oklch(0.85 0.08 45); }
+.receita-card.editing .receita-card-acoes button {
+  background: var(--paper);
+  border-color: var(--coral-soft);
 }
 
 .receita-card .receita-nome {
@@ -3544,11 +3554,6 @@ function renderReceitas() {
     const canalClass = r.vendeIfood ? 'ifood-ativo' : '';
     const rendInfo = c.rendimento > 1 ? ` · Rende ${c.rendimento} potes` : '';
     html += `<div class="receita-card ${ativa}" onclick="carregarReceita(${r.id})">
-      <div class="receita-card-acoes">
-        <button type="button" onclick="event.stopPropagation();duplicarReceita(${r.id})" aria-label="Duplicar receita" title="Duplicar">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
-        </button>
-      </div>
       <div>
         <div class="receita-nome">${esc(r.nome)}</div>
         <div class="receita-meta">Custo ${brl(c.custoTotal)}/pote · Meta ${r.metaLucro}%${rendInfo}</div>
@@ -3556,6 +3561,11 @@ function renderReceitas() {
       <div class="receita-preco-bloco">
         <div class="receita-preco">${brl(preco)}</div>
         <div class="receita-canal ${canalClass}">${canal} · pote</div>
+      </div>
+      <div class="receita-card-acoes">
+        <button type="button" onclick="event.stopPropagation();duplicarReceita(${r.id})" aria-label="Duplicar receita" title="Duplicar receita">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+        </button>
       </div>
     </div>`;
   });
