@@ -1483,7 +1483,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       </div>
       <div class="tutorial-text">
         <strong>Bem-vinda!</strong>
-        Os itens com "(exemplo)" são só pra você ver como funciona. Comece apagando eles e cadastrando os seus próprios ingredientes, embalagens e receitas.
+        Comece cadastrando seus <strong>Ingredientes</strong> (na aba acima) e suas <strong>Embalagens</strong>. Depois crie a sua primeira <strong>Receita</strong> aqui.
       </div>
       <button class="tutorial-close" onclick="fecharTutorial()" aria-label="Fechar dica">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
@@ -1751,7 +1751,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         </div>
         <div class="backup-item">
           <div class="backup-titulo">Restaurar padrão</div>
-          <div class="backup-desc">Apaga tudo e volta pros exemplos do começo. Use só se quiser recomeçar do zero.</div>
+          <div class="backup-desc">Apaga tudo e deixa o app em branco. Use só se quiser recomeçar do zero.</div>
         </div>
       </div>
       <div class="acoes-receita">
@@ -1810,22 +1810,10 @@ function vazia() {
 }
 
 // ==================== DADOS PADRÃO ====================
-// Exemplos mínimos pro modo tutorial — alunas aprendem cadastrando o resto
-const INGREDIENTES_PADRAO = [
-  { id: 1, nome: 'Aipim (exemplo)',  peso: 1000, preco: 5.00 },
-  { id: 2, nome: 'Frango (exemplo)', peso: 1000, preco: 18.00 }
-];
-
-const EMBALAGENS_PADRAO = [
-  { id: 1, nome: 'Pote 500ml (exemplo)',  unidades: 50, preco: 35.00 },
-  { id: 2, nome: 'Tampa 500ml (exemplo)', unidades: 50, preco: 15.00 }
-];
-
-const RECEITAS_PADRAO = [
-  { id: 1, nome: 'Caldo de Frango (exemplo)', metaLucro: 65, vendeIfood: false, rendimento: 10,
-    itens: [{ingId:1, qtd:1200},{ingId:2, qtd:1500}],
-    embalagensUsadas: [{embId:1, qtd:1},{embId:2, qtd:1}] }
-];
+// App começa vazio — a aluna cadastra tudo do zero
+const INGREDIENTES_PADRAO = [];
+const EMBALAGENS_PADRAO = [];
+const RECEITAS_PADRAO = [];
 
 // ==================== PERSISTÊNCIA ====================
 function salvarDados() {
@@ -2549,12 +2537,10 @@ function inicializarTutorial() {
   const banner = document.getElementById('tutorial-banner');
   if (!banner) return;
 
-  const temExemplos =
-    ingredientes.some(i => /\(exemplo\)/i.test(i.nome)) ||
-    embalagens.some(e => /\(exemplo\)/i.test(e.nome)) ||
-    receitas.some(r => /\(exemplo\)/i.test(r.nome));
+  // Esconde se a aluna já fechou o banner OU se já tem qualquer coisa cadastrada
+  const jaUsou = ingredientes.length > 0 || embalagens.length > 0 || receitas.length > 0;
 
-  if (visto === '1' || !temExemplos) {
+  if (visto === '1' || jaUsou) {
     banner.classList.add('hidden');
   }
 }
