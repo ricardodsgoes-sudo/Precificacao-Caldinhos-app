@@ -721,6 +721,70 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   border: 1px solid var(--paper-3);
 }
 
+.resumo-duplo {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+  margin: var(--s-4) 0;
+}
+.resumo-duplo .resumo { margin: 0; }
+.resumo-panela { background: var(--paper); border: 1px dashed var(--paper-4); }
+
+.resumo-titulo {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bordo);
+  margin-bottom: var(--s-3);
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--paper-3);
+}
+.resumo-panela .resumo-titulo { color: var(--ink-2); }
+.resumo-panela .resumo-titulo span { color: var(--ink-3); font-weight: 600; letter-spacing: 0; font-size: 0.95em; text-transform: none; }
+
+.resumo-linha.faturamento {
+  padding-top: var(--s-3);
+  margin-top: var(--s-2);
+  border-top: 1px dashed var(--paper-4);
+  font-size: 0.92rem;
+}
+.resumo-linha.faturamento .label { color: var(--ink-3); font-style: italic; }
+.resumo-linha.faturamento .valor { color: var(--ink-2); font-weight: 500; }
+
+@media (min-width: 640px) {
+  .resumo-duplo { grid-template-columns: 1fr 1fr; }
+}
+
+.preco-sub {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: -4px;
+  margin-bottom: var(--s-3);
+  text-transform: lowercase;
+}
+
+.pr-rend {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  margin-left: var(--s-2);
+}
+
+.pr-linha.pr-batch {
+  margin-top: var(--s-2);
+  padding-top: var(--s-2);
+  border-top: 1px dashed var(--paper-3);
+  font-style: italic;
+}
+.pr-linha.pr-batch .l { color: var(--ink-3); }
+.pr-linha.pr-batch .v { color: var(--ink-2); font-weight: 500; }
+
 .resumo-linha {
   display: flex;
   justify-content: space-between;
@@ -1435,7 +1499,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
     <div class="card reveal" id="card-editor">
       <h2 id="receita-titulo">Nova Receita</h2>
-      <p class="help-text">Preencha ingredientes, embalagens e a meta de lucro. O sistema calcula o preço pra você ganhar o que planejou.</p>
+      <p class="help-text">Cadastre a panela inteira (ingredientes), as embalagens por pote, e quantos potes essa receita rende. O sistema calcula o preço por pote pra você ganhar o que planejou.</p>
 
       <div class="form-group">
         <label>Nome do caldo</label>
@@ -1443,13 +1507,24 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         <span class="hint">Como você chama esse caldo no cardápio.</span>
       </div>
 
-      <h3>Ingredientes</h3>
+      <h3>Ingredientes da panela</h3>
+      <p class="help-text" style="margin-top:-8px">Quantidade total da receita — o que vai na panela inteira.</p>
       <div class="receita-itens" id="receita-ingredientes"></div>
       <button class="btn-ghost btn-full" style="margin-top: var(--s-3)" onclick="adicionarLinhaIngrediente()">
         + Adicionar ingrediente
       </button>
 
-      <h3>Embalagens</h3>
+      <div class="form-group" style="margin-top: var(--s-6)">
+        <label>Rendimento <span class="unit-badge">quantos potes</span></label>
+        <div class="input-wrap has-suffix">
+          <input type="number" id="receita-rendimento" value="1" min="1" step="1" oninput="recalcularReceita()">
+          <span class="input-suffix">potes</span>
+        </div>
+        <span class="hint">Quantos potes/porções saem dessa panela. Se você não divide em potes, deixe 1.</span>
+      </div>
+
+      <h3>Embalagens por pote</h3>
+      <p class="help-text" style="margin-top:-8px">O que vai em <strong>cada</strong> pote — geralmente 1 pote, 1 tampa, 1 sacola, 1 colher.</p>
       <div class="receita-itens" id="receita-embalagens"></div>
       <button class="btn-ghost btn-full" style="margin-top: var(--s-3)" onclick="adicionarLinhaEmbalagem()">
         + Adicionar embalagem
@@ -1472,30 +1547,42 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         </label>
       </div>
 
-      <div class="resumo">
-        <div class="resumo-linha"><span class="label">Ingredientes</span><span class="valor" id="resumo-custo-ing">R$ 0,00</span></div>
-        <div class="resumo-linha"><span class="label">Embalagens</span><span class="valor" id="resumo-custo-emb">R$ 0,00</span></div>
-        <div class="resumo-linha total"><span class="label">Custo total</span><span class="valor" id="resumo-custo-total">R$ 0,00</span></div>
+      <div class="resumo-duplo">
+        <div class="resumo">
+          <div class="resumo-titulo">Por pote</div>
+          <div class="resumo-linha"><span class="label">Ingredientes</span><span class="valor" id="resumo-custo-ing">R$ 0,00</span></div>
+          <div class="resumo-linha"><span class="label">Embalagens</span><span class="valor" id="resumo-custo-emb">R$ 0,00</span></div>
+          <div class="resumo-linha total"><span class="label">Custo por pote</span><span class="valor" id="resumo-custo-total">R$ 0,00</span></div>
+        </div>
+        <div class="resumo resumo-panela">
+          <div class="resumo-titulo">Panela inteira <span id="resumo-panela-qtd">(× 1)</span></div>
+          <div class="resumo-linha"><span class="label">Ingredientes</span><span class="valor" id="resumo-batch-ing">R$ 0,00</span></div>
+          <div class="resumo-linha"><span class="label">Embalagens</span><span class="valor" id="resumo-batch-emb">R$ 0,00</span></div>
+          <div class="resumo-linha total"><span class="label">Custo da panela</span><span class="valor" id="resumo-batch-total">R$ 0,00</span></div>
+          <div class="resumo-linha faturamento"><span class="label">Faturamento balcão</span><span class="valor" id="resumo-batch-faturamento">R$ 0,00</span></div>
+        </div>
       </div>
 
       <div class="precos-grid">
         <div class="preco-card balcao">
           <span class="canal-tag">Balcão</span>
           <div class="preco-numero"><span class="moeda">R$</span><span id="preco-balcao-num">0,00</span></div>
+          <div class="preco-sub">por pote</div>
           <div class="preco-linha"><span>Custo</span><span class="v" id="preco-balcao-custo">R$ 0,00</span></div>
           <div class="preco-linha"><span>Margem</span><span class="v" id="preco-balcao-margem">0%</span></div>
           <div class="lucro-final">
-            <span class="label">Você lucra</span>
+            <span class="label">Você lucra por pote</span>
             <span class="v positivo" id="preco-balcao-lucro">R$ 0,00</span>
           </div>
         </div>
         <div class="preco-card ifood">
           <span class="canal-tag">iFood</span>
           <div class="preco-numero"><span class="moeda">R$</span><span id="preco-ifood-num">0,00</span></div>
+          <div class="preco-sub">por pote</div>
           <div class="preco-linha"><span>Você recebe</span><span class="v" id="preco-ifood-recebe">R$ 0,00</span></div>
           <div class="preco-linha"><span>Taxa iFood</span><span class="v" id="preco-ifood-taxa">R$ 0,00</span></div>
           <div class="lucro-final">
-            <span class="label">Lucro líquido</span>
+            <span class="label">Lucro líquido por pote</span>
             <span class="v positivo" id="preco-ifood-lucro">R$ 0,00</span>
           </div>
         </div>
@@ -1719,7 +1806,7 @@ let receitaAtual = vazia();
 let modalCallback = null;
 
 function vazia() {
-  return { id: null, nome: '', itens: [], embalagensUsadas: [], metaLucro: 60, vendeIfood: false };
+  return { id: null, nome: '', itens: [], embalagensUsadas: [], metaLucro: 60, vendeIfood: false, rendimento: 1 };
 }
 
 // ==================== DADOS PADRÃO ====================
@@ -1735,8 +1822,8 @@ const EMBALAGENS_PADRAO = [
 ];
 
 const RECEITAS_PADRAO = [
-  { id: 1, nome: 'Caldo de Frango (exemplo)', metaLucro: 65, vendeIfood: false,
-    itens: [{ingId:1, qtd:120},{ingId:2, qtd:150}],
+  { id: 1, nome: 'Caldo de Frango (exemplo)', metaLucro: 65, vendeIfood: false, rendimento: 10,
+    itens: [{ingId:1, qtd:1200},{ingId:2, qtd:1500}],
     embalagensUsadas: [{embId:1, qtd:1},{embId:2, qtd:1}] }
 ];
 
@@ -1755,7 +1842,10 @@ function carregarDados() {
     embalagens = JSON.parse(localStorage.getItem('delicaldos_embalagens')) || [...EMBALAGENS_PADRAO];
     receitas = JSON.parse(localStorage.getItem('delicaldos_receitas')) || RECEITAS_PADRAO.map(r => JSON.parse(JSON.stringify(r)));
     config = JSON.parse(localStorage.getItem('delicaldos_config')) || { ifoodPct: 23, ifoodFixa: 0 };
-    receitas.forEach(r => { if (!r.embalagensUsadas) r.embalagensUsadas = []; });
+    receitas.forEach(r => {
+      if (!r.embalagensUsadas) r.embalagensUsadas = [];
+      if (!r.rendimento || r.rendimento < 1) r.rendimento = 1;
+    });
   } catch (e) {
     ingredientes = [...INGREDIENTES_PADRAO];
     embalagens = [...EMBALAGENS_PADRAO];
@@ -2020,6 +2110,7 @@ function novaReceita(opts = {}) {
   document.getElementById('receita-nome').value = '';
   document.getElementById('meta-lucro').value = 60;
   document.getElementById('vende-ifood').checked = false;
+  document.getElementById('receita-rendimento').value = 1;
   document.getElementById('btn-excluir').style.display = 'none';
   renderIngredientesReceita();
   renderEmbalagensReceita();
@@ -2041,11 +2132,13 @@ function carregarReceita(id) {
   if (!r) return;
   receitaAtual = JSON.parse(JSON.stringify(r));
   if (!receitaAtual.embalagensUsadas) receitaAtual.embalagensUsadas = [];
+  if (!receitaAtual.rendimento || receitaAtual.rendimento < 1) receitaAtual.rendimento = 1;
 
   document.getElementById('receita-titulo').textContent = r.nome;
   document.getElementById('receita-nome').value = r.nome;
   document.getElementById('meta-lucro').value = r.metaLucro;
   document.getElementById('vende-ifood').checked = !!r.vendeIfood;
+  document.getElementById('receita-rendimento').value = receitaAtual.rendimento;
   document.getElementById('btn-excluir').style.display = '';
   renderIngredientesReceita();
   renderEmbalagensReceita();
@@ -2200,34 +2293,57 @@ function calcCustoEmb(r) {
 }
 
 function calcularReceita(r) {
-  const custoIng = calcCustoIng(r);
-  const custoEmb = calcCustoEmb(r);
-  const custoTotal = custoIng + custoEmb;
+  const rendimento = Math.max(1, parseInt(r.rendimento) || 1);
 
-  const precoBalcao = custoTotal * (1 + r.metaLucro / 100);
-  const lucroBalcao = precoBalcao - custoTotal;
-  const margemBalcao = custoTotal > 0 ? (lucroBalcao / custoTotal) * 100 : 0;
+  // Ingredientes cadastrados pra panela inteira → divide pelo rendimento pra ter por pote
+  const custoIngBatch = calcCustoIng(r);
+  const custoIngUnit = custoIngBatch / rendimento;
+
+  // Embalagens cadastradas por pote → multiplica pelo rendimento pra ter a panela
+  const custoEmbUnit = calcCustoEmb(r);
+  const custoEmbBatch = custoEmbUnit * rendimento;
+
+  const custoUnit = custoIngUnit + custoEmbUnit;
+  const custoBatch = custoIngBatch + custoEmbBatch;
+
+  const precoBalcao = custoUnit * (1 + r.metaLucro / 100);
+  const lucroBalcao = precoBalcao - custoUnit;
+  const margemBalcao = custoUnit > 0 ? (lucroBalcao / custoUnit) * 100 : 0;
+  const faturamentoBatchBalcao = precoBalcao * rendimento;
 
   const p = config.ifoodPct / 100;
   let precoIfood = 0, recebeIfood = 0, taxaIfood = 0, lucroIfood = 0;
   if (p < 1) {
-    precoIfood = (custoTotal + lucroBalcao + config.ifoodFixa) / (1 - p);
+    precoIfood = (custoUnit + lucroBalcao + config.ifoodFixa) / (1 - p);
     taxaIfood = precoIfood * p + config.ifoodFixa;
     recebeIfood = precoIfood - taxaIfood;
-    lucroIfood = recebeIfood - custoTotal;
+    lucroIfood = recebeIfood - custoUnit;
   }
-  return { custoIng, custoEmb, custoTotal, precoBalcao, lucroBalcao, margemBalcao, precoIfood, recebeIfood, taxaIfood, lucroIfood };
+  return {
+    rendimento,
+    custoIng: custoIngUnit, custoEmb: custoEmbUnit, custoTotal: custoUnit,
+    custoIngBatch, custoEmbBatch, custoBatch,
+    precoBalcao, lucroBalcao, margemBalcao, faturamentoBatchBalcao,
+    precoIfood, recebeIfood, taxaIfood, lucroIfood
+  };
 }
 
 function recalcularReceita() {
   receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
   receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
+  receitaAtual.rendimento = Math.max(1, parseInt(document.getElementById('receita-rendimento').value) || 1);
 
   const c = calcularReceita(receitaAtual);
 
   document.getElementById('resumo-custo-ing').textContent = brl(c.custoIng);
   document.getElementById('resumo-custo-emb').textContent = brl(c.custoEmb);
   document.getElementById('resumo-custo-total').textContent = brl(c.custoTotal);
+
+  document.getElementById('resumo-panela-qtd').textContent = `(× ${c.rendimento})`;
+  document.getElementById('resumo-batch-ing').textContent = brl(c.custoIngBatch);
+  document.getElementById('resumo-batch-emb').textContent = brl(c.custoEmbBatch);
+  document.getElementById('resumo-batch-total').textContent = brl(c.custoBatch);
+  document.getElementById('resumo-batch-faturamento').textContent = brl(c.faturamentoBatchBalcao);
 
   document.getElementById('preco-balcao-num').textContent = brlNum(c.precoBalcao);
   document.getElementById('preco-balcao-custo').textContent = brl(c.custoTotal);
@@ -2252,6 +2368,7 @@ function salvarReceita() {
   receitaAtual.nome = nome;
   receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
   receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
+  receitaAtual.rendimento = Math.max(1, parseInt(document.getElementById('receita-rendimento').value) || 1);
 
   if (receitaAtual.id === null) {
     receitaAtual.id = novoId(receitas);
@@ -2292,14 +2409,15 @@ function renderReceitas() {
     const preco = r.vendeIfood ? c.precoIfood : c.precoBalcao;
     const canal = r.vendeIfood ? 'iFood' : 'Balcão';
     const canalClass = r.vendeIfood ? 'ifood-ativo' : '';
+    const rendInfo = c.rendimento > 1 ? ` · Rende ${c.rendimento} potes` : '';
     html += `<div class="receita-card ${ativa}" onclick="carregarReceita(${r.id})">
       <div>
         <div class="receita-nome">${esc(r.nome)}</div>
-        <div class="receita-meta">Custo ${brl(c.custoTotal)} · Meta ${r.metaLucro}%</div>
+        <div class="receita-meta">Custo ${brl(c.custoTotal)}/pote · Meta ${r.metaLucro}%${rendInfo}</div>
       </div>
       <div class="receita-preco-bloco">
         <div class="receita-preco">${brl(preco)}</div>
-        <div class="receita-canal ${canalClass}">${canal}</div>
+        <div class="receita-canal ${canalClass}">${canal} · pote</div>
       </div>
     </div>`;
   });
@@ -2337,13 +2455,14 @@ function renderPainel() {
   dados.forEach(r => {
     const clB = r.lucroBalcao >= 0 ? 'positivo' : 'negativo';
     html += `<div class="painel-receita">
-      <div class="pr-nome">${esc(r.nome)}</div>
-      <div class="pr-linha"><span class="l">Custo total</span><span class="v">${brl(r.custoTotal)}</span></div>
-      <div class="pr-linha"><span class="l">Preço balcão</span><span class="v">${brl(r.precoBalcao)} <span class="${clB}">(${brl(r.lucroBalcao)})</span></span></div>
+      <div class="pr-nome">${esc(r.nome)} <span class="pr-rend">${r.rendimento > 1 ? `rende ${r.rendimento} potes` : '1 pote'}</span></div>
+      <div class="pr-linha"><span class="l">Custo por pote</span><span class="v">${brl(r.custoTotal)}</span></div>
+      <div class="pr-linha"><span class="l">Preço balcão</span><span class="v">${brl(r.precoBalcao)} <span class="${clB}">(${brl(r.lucroBalcao)} lucro)</span></span></div>
       ${r.vendeIfood
         ? `<div class="pr-linha"><span class="l">Preço iFood</span><span class="v">${brl(r.precoIfood)} <span class="${r.lucroIfood >= 0 ? 'positivo' : 'negativo'}">(${brl(r.lucroIfood)} líq.)</span></span></div>`
         : `<div class="pr-linha"><span class="l">iFood</span><span class="v" style="color:var(--ink-3);font-weight:400;font-style:italic">não vende</span></div>`
       }
+      ${r.rendimento > 1 ? `<div class="pr-linha pr-batch"><span class="l">Faturamento da panela</span><span class="v">${brl(r.faturamentoBatchBalcao)}</span></div>` : ''}
     </div>`;
   });
   lista.innerHTML = html;
