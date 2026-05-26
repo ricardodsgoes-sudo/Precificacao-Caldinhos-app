@@ -506,6 +506,43 @@ select { cursor: pointer; appearance: none;
 .input-wrap.has-prefix input { padding-left: 38px; }
 .input-wrap.has-suffix input { padding-right: 36px; }
 
+/* ---- Pills de unidade dentro do input (kg/g) ---- */
+.input-wrap.has-suffix-pills input { padding-right: 88px; }
+.input-wrap .unit-pills {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  gap: 2px;
+  background: var(--paper-2);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  border: 1px solid var(--paper-3);
+}
+.unit-pill {
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  cursor: pointer;
+  min-height: 28px;
+  min-width: 32px;
+  letter-spacing: 0.02em;
+  transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+  box-shadow: none;
+}
+.unit-pill:hover:not(.active) { color: var(--bordo); background: var(--paper-3); filter: none; box-shadow: none; }
+.unit-pill.active {
+  background: var(--bordo);
+  color: var(--paper);
+}
+.unit-pill:active { transform: scale(0.94); }
+
 /* ==========================================================================
    BOTÕES
    ========================================================================== */
@@ -1615,12 +1652,15 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
       <div class="form-grid-2">
         <div class="form-group">
-          <label>Peso do pacote <span class="unit-badge">em gramas</span></label>
-          <div class="input-wrap has-suffix">
-            <input type="number" id="ing-peso" placeholder="1000" min="0" step="any" oninput="previewIng()">
-            <span class="input-suffix">g</span>
+          <label>Peso do pacote</label>
+          <div class="input-wrap has-suffix-pills">
+            <input type="number" id="ing-peso" placeholder="1,5" min="0" step="any" oninput="previewIng()">
+            <div class="unit-pills" role="group" aria-label="Unidade do peso">
+              <button type="button" class="unit-pill active" id="ing-peso-unit-kg" onclick="setIngPesoUnit('kg')">kg</button>
+              <button type="button" class="unit-pill" id="ing-peso-unit-g" onclick="setIngPesoUnit('g')">g</button>
+            </div>
           </div>
-          <span class="hint">Quantos gramas vêm no pacote que você compra.</span>
+          <span class="hint" id="ing-peso-hint">Quanto pesa o pacote inteiro que você compra.</span>
         </div>
 
         <div class="form-group">
@@ -1950,9 +1990,27 @@ function renderConfig() {
   document.getElementById('cfg-ifood-fixa').value = config.ifoodFixa;
 }
 
+// ==================== UNIDADE DO PESO (kg/g) ====================
+let ingPesoUnit = 'kg'; // padrão: kg (mais natural pra carnes, aipim, etc.)
+
+function setIngPesoUnit(unit) {
+  if (unit !== 'kg' && unit !== 'g') return;
+  ingPesoUnit = unit;
+  document.getElementById('ing-peso-unit-kg').classList.toggle('active', unit === 'kg');
+  document.getElementById('ing-peso-unit-g').classList.toggle('active', unit === 'g');
+  document.getElementById('ing-peso').placeholder = unit === 'kg' ? '1,5' : '1500';
+  previewIng();
+}
+
+function getIngPesoGramas() {
+  const v = parseFloat(document.getElementById('ing-peso').value);
+  if (!v || v <= 0) return 0;
+  return ingPesoUnit === 'kg' ? v * 1000 : v;
+}
+
 // ==================== PREVIEW (campos autoexplicativos) ====================
 function previewIng() {
-  const peso = parseFloat(document.getElementById('ing-peso').value);
+  const peso = getIngPesoGramas();
   const preco = parseFloat(document.getElementById('ing-preco').value);
   const p = document.getElementById('ing-preview');
   if (peso > 0 && preco > 0) {
@@ -1984,7 +2042,7 @@ function previewEmb() {
 // ==================== INGREDIENTES ====================
 function adicionarIngrediente() {
   const nome = document.getElementById('ing-nome').value.trim();
-  const peso = parseFloat(document.getElementById('ing-peso').value);
+  const peso = getIngPesoGramas();
   const preco = parseFloat(document.getElementById('ing-preco').value);
 
   if (!nome) return toast('Informe o nome', 'erro');
