@@ -1826,32 +1826,6 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 }
 
 /* ==========================================================================
-   AVISO DE ARMAZENAMENTO (onboarding)
-   ========================================================================== */
-.onboarding-aviso {
-  display: flex;
-  gap: var(--s-3);
-  align-items: flex-start;
-  padding: var(--s-3) var(--s-4);
-  margin-top: var(--s-3);
-  background: var(--paper-2);
-  border: 1px dashed var(--paper-4);
-  border-radius: var(--r-md);
-  font-size: 0.85rem;
-  color: var(--ink-2);
-  line-height: 1.5;
-}
-.onboarding-aviso svg { color: var(--bordo-soft); flex-shrink: 0; margin-top: 2px; }
-.onboarding-aviso strong { color: var(--ink); }
-.onboarding-aviso a {
-  color: var(--bordo);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-
-/* ==========================================================================
    BOTÃO INSTALAR APP (PWA)
    ========================================================================== */
 .install-btn {
@@ -2167,10 +2141,6 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="tutorial-text">
         <strong>Boas-vindas!</strong>
         Comece cadastrando seus <strong>Ingredientes</strong> (na aba acima) e suas <strong>Embalagens</strong>. Depois crie a sua primeira <strong>Receita</strong> aqui.
-        <div class="onboarding-aviso" style="margin-top: var(--s-3)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>
-          <span><strong>Seus dados ficam só neste celular.</strong> Limpar o navegador, trocar de aparelho ou desinstalar o app apaga tudo. <a onclick="irPara('config')">Fazer backup agora →</a></span>
-        </div>
       </div>
       <button class="tutorial-close" onclick="fecharTutorial()" aria-label="Fechar dica">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
