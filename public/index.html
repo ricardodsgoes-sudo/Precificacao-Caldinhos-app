@@ -1191,6 +1191,46 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   gap: var(--s-3);
 }
 
+/* Quando a lista cresce, limita a altura e libera scroll interno.
+   Mantém o editor de receita logo abaixo sempre acessível. */
+.receitas-scroll {
+  position: relative;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin: 0 calc(-1 * var(--s-1)) var(--s-2);
+  padding-left: var(--s-1);
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-4) transparent;
+}
+.receitas-scroll::-webkit-scrollbar { width: 6px; }
+.receitas-scroll::-webkit-scrollbar-track { background: transparent; }
+.receitas-scroll::-webkit-scrollbar-thumb {
+  background: var(--paper-4);
+  border-radius: 3px;
+}
+.receitas-scroll-wrap {
+  position: relative;
+}
+.receitas-scroll-wrap.com-scroll::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 6px;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--paper) 0%, transparent 100%);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+}
+.receitas-scroll-count {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  text-align: center;
+  padding: 4px 0 6px;
+  font-style: italic;
+}
+
 .receita-card {
   background: var(--paper);
   border: 1.5px solid var(--paper-3);
@@ -3484,7 +3524,18 @@ function renderReceitas() {
     return;
   }
 
-  let html = '<div class="receitas-grid">';
+  // Quando passa de 4 cards, agrupa em container com scroll interno.
+  // Assim o editor abaixo sempre fica próximo, sem rolar a tela toda.
+  const usaScroll = listaFiltrada.length > 4;
+  let html = '';
+  if (usaScroll) {
+    html += `<div class="receitas-scroll-wrap com-scroll">
+               <div class="receitas-scroll">
+                 <div class="receitas-grid">`;
+  } else {
+    html += '<div class="receitas-grid">';
+  }
+
   listaFiltrada.forEach(r => {
     const c = calcularReceita(r);
     const ativa = receitaAtual.id === r.id ? 'editing' : '';
@@ -3508,7 +3559,14 @@ function renderReceitas() {
       </div>
     </div>`;
   });
-  html += '</div>';
+
+  if (usaScroll) {
+    html += `</div></div>
+             <div class="receitas-scroll-count">${listaFiltrada.length} receitas · role pra ver todas</div>
+             </div>`;
+  } else {
+    html += '</div>';
+  }
   div.innerHTML = html;
   proximoPasso(
     'prox-receitas', receitas.length,
