@@ -1528,17 +1528,17 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
 <nav class="tabs">
   <div class="tabs-inner">
-    <button class="tab-btn active" data-tab="receitas">
-      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
-      Receitas
-    </button>
-    <button class="tab-btn" data-tab="ingredientes">
+    <button class="tab-btn active" data-tab="ingredientes">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2 2-4 4-4s4 2 4 4-2 4-4 4-4-2-4-4z"/></svg>
       Ingredientes
     </button>
     <button class="tab-btn" data-tab="embalagens">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"/><path d="M4 7l2-3h12l2 3M9 12h6" stroke-linecap="round"/></svg>
       Embalagens
+    </button>
+    <button class="tab-btn" data-tab="receitas">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
+      Receitas
     </button>
     <button class="tab-btn" data-tab="painel">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m6 10V5m6 14v-7m4 7H4" stroke-linecap="round"/></svg>
@@ -1554,7 +1554,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 <main>
 
   <!-- ===================== ABA RECEITAS ===================== -->
-  <section class="tab-content active" id="tab-receitas">
+  <section class="tab-content" id="tab-receitas">
     <div class="aba-header">
       <div class="eyebrow">Suas Receitas</div>
       <h2 class="display">O preço certo de cada caldo</h2>
@@ -1681,7 +1681,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   </section>
 
   <!-- ===================== ABA INGREDIENTES ===================== -->
-  <section class="tab-content" id="tab-ingredientes">
+  <section class="tab-content active" id="tab-ingredientes">
     <div class="aba-header">
       <div class="eyebrow">Despensa</div>
       <h2 class="display">Ingredientes</h2>
