@@ -1237,7 +1237,76 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
-.empty .empty-dica { font-size: 0.9rem; max-width: 32ch; margin: 0 auto; }
+.empty .empty-dica { font-size: 0.9rem; max-width: 38ch; margin: 0 auto; line-height: 1.5; }
+.empty .empty-cta {
+  margin-top: var(--s-4);
+  padding: 12px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* ---- Card "Próximo passo" — aparece no fim de cada aba quando há conteúdo ---- */
+.prox-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: var(--s-2) var(--s-3);
+  align-items: center;
+  background: linear-gradient(135deg, var(--coral-tint), var(--paper-2));
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: var(--s-4) var(--s-5);
+  margin-top: var(--s-5);
+}
+.prox-check {
+  grid-row: span 2;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--bordo);
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.prox-titulo {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--bordo);
+  letter-spacing: -0.005em;
+}
+.prox-desc {
+  font-size: 0.88rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.prox-desc strong { color: var(--ink); font-weight: 600; }
+.prox-btn {
+  grid-column: 1 / -1;
+  margin-top: var(--s-2);
+  background: var(--bordo);
+  color: var(--paper);
+  border: none;
+  border-radius: var(--r-md);
+  padding: 12px 18px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  transition: filter 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+}
+.prox-btn:hover { filter: brightness(1.1); box-shadow: var(--shadow-2); }
+.prox-btn:active { transform: scale(0.97); }
+
+@media (min-width: 640px) {
+  .prox-card { grid-template-columns: auto 1fr auto; grid-template-rows: auto; }
+  .prox-btn { grid-column: auto; margin-top: 0; }
+}
 
 /* ==========================================================================
    PAINEL
@@ -1635,6 +1704,8 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       </button>
     </div>
 
+    <div id="prox-receitas"></div>
+
     <div class="card reveal" id="card-editor">
       <h2 id="receita-titulo">Nova Receita</h2>
       <p class="help-text">Cadastre a panela inteira (ingredientes), as embalagens por pote, e quantos potes essa receita rende. O sistema calcula o preço por pote pra você ganhar o que planejou.</p>
@@ -1801,6 +1872,8 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <h2>Cadastrados</h2>
       <div id="ingredientes-lista"></div>
     </div>
+
+    <div id="prox-ingredientes"></div>
   </section>
 
   <!-- ===================== ABA EMBALAGENS ===================== -->
@@ -1850,6 +1923,8 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <h2>Cadastradas</h2>
       <div id="embalagens-lista"></div>
     </div>
+
+    <div id="prox-embalagens"></div>
   </section>
 
   <!-- ===================== ABA AJUSTES ===================== -->
@@ -2249,7 +2324,11 @@ function removerIngrediente(id) {
 function renderIngredientes() {
   const div = document.getElementById('ingredientes-lista');
   if (ingredientes.length === 0) {
-    div.innerHTML = emptyState('Sem ingredientes', 'Cadastre o primeiro no formulário acima.');
+    div.innerHTML = emptyState(
+      'Nenhum ingrediente ainda',
+      'Use o formulário acima pra cadastrar seu primeiro: frango, aipim, azeite, vinagre — qualquer coisa que entra nos seus caldos.'
+    );
+    proximoPasso('prox-ingredientes', 0);
     return;
   }
   let html = '<div class="cadastro-lista">';
@@ -2269,6 +2348,12 @@ function renderIngredientes() {
   });
   html += '</div>';
   div.innerHTML = html;
+  proximoPasso(
+    'prox-ingredientes', ingredientes.length,
+    ingredientes.length === 1 ? 'ingrediente cadastrado' : 'ingredientes cadastrados',
+    'Agora cadastre os <strong>potes, tampas, sacolas</strong> e outros itens que vão junto com seus caldos.',
+    'Ir pra Embalagens', 'embalagens'
+  );
 }
 
 // ==================== EMBALAGENS ====================
@@ -2310,7 +2395,11 @@ function removerEmbalagem(id) {
 function renderEmbalagens() {
   const div = document.getElementById('embalagens-lista');
   if (embalagens.length === 0) {
-    div.innerHTML = emptyState('Sem embalagens', 'Cadastre a primeira no formulário acima.');
+    const dica = ingredientes.length === 0
+      ? 'Cadastre primeiro alguns Ingredientes — depois volte aqui pras embalagens.'
+      : 'Use o formulário acima pra cadastrar seu primeiro item: pote 500ml, tampa, sacola, talher descartável...';
+    div.innerHTML = emptyState('Nenhuma embalagem ainda', dica);
+    proximoPasso('prox-embalagens', 0);
     return;
   }
   let html = '<div class="cadastro-lista">';
@@ -2329,6 +2418,12 @@ function renderEmbalagens() {
   });
   html += '</div>';
   div.innerHTML = html;
+  proximoPasso(
+    'prox-embalagens', embalagens.length,
+    embalagens.length === 1 ? 'embalagem cadastrada' : 'embalagens cadastradas',
+    'Tudo pronto pra montar sua primeira receita e descobrir o <strong>preço de venda</strong>.',
+    'Ir pra Receitas', 'receitas'
+  );
 }
 
 // ==================== RECEITAS ====================
@@ -2636,7 +2731,21 @@ function excluirReceita() {
 function renderReceitas() {
   const div = document.getElementById('receitas-lista');
   if (receitas.length === 0) {
-    div.innerHTML = emptyState('Nenhuma receita ainda', 'Clique em "Criar Nova Receita" abaixo.');
+    let titulo, dica, cta = '', aba = '';
+    if (ingredientes.length === 0) {
+      titulo = 'Falta cadastrar Ingredientes';
+      dica = 'Antes de criar uma receita, cadastre o que você compra (frango, aipim, azeite...).';
+      cta = 'Ir pra Ingredientes'; aba = 'ingredientes';
+    } else if (embalagens.length === 0) {
+      titulo = 'Falta cadastrar Embalagens';
+      dica = 'Você já tem ingredientes! Agora cadastre os potes, tampas e sacolas que vão com o caldo.';
+      cta = 'Ir pra Embalagens'; aba = 'embalagens';
+    } else {
+      titulo = 'Tudo pronto pra primeira receita!';
+      dica = 'Clique em "Criar Nova Receita" abaixo e monte seu primeiro caldo.';
+    }
+    div.innerHTML = emptyState(titulo, dica, cta, aba);
+    proximoPasso('prox-receitas', 0);
     return;
   }
   let html = '<div class="receitas-grid">';
@@ -2660,6 +2769,12 @@ function renderReceitas() {
   });
   html += '</div>';
   div.innerHTML = html;
+  proximoPasso(
+    'prox-receitas', receitas.length,
+    receitas.length === 1 ? 'receita cadastrada' : 'receitas cadastradas',
+    'Veja o resumo completo de custos, lucros e margens de todos os seus caldos no <strong>Painel</strong>.',
+    'Ir pro Painel', 'painel'
+  );
 }
 
 // ==================== PAINEL ====================
@@ -2668,7 +2783,10 @@ function renderPainel() {
   const lista = document.getElementById('painel-receitas');
   if (receitas.length === 0) {
     stats.innerHTML = '';
-    lista.innerHTML = emptyState('Sem dados ainda', 'Crie uma receita pra começar.');
+    const dica = (ingredientes.length === 0 || embalagens.length === 0)
+      ? 'O Painel mostra o resumo das suas receitas. Primeiro cadastre Ingredientes, Embalagens e crie uma Receita.'
+      : 'Crie sua primeira receita pra ver o resumo de custos e lucros aqui.';
+    lista.innerHTML = emptyState('Sem receitas ainda', dica, 'Ir pra Receitas', 'receitas');
     return;
   }
   let totalCusto = 0, totalLucroBalcao = 0, qtdIfood = 0;
@@ -2706,12 +2824,36 @@ function renderPainel() {
 }
 
 // ==================== EMPTY STATE ====================
-function emptyState(titulo, dica) {
+function emptyState(titulo, dica, ctaTexto, ctaAba) {
+  const cta = ctaTexto && ctaAba
+    ? `<button class="btn-coral empty-cta" onclick="irPara('${ctaAba}')">${ctaTexto}</button>`
+    : '';
   return `<div class="empty">
     <div class="ico-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M9 15c1 1 2 1 3 1s2 0 3-1" stroke-linecap="round"/></svg></div>
     <div class="empty-titulo">${titulo}</div>
     <div class="empty-dica">${dica}</div>
+    ${cta}
   </div>`;
+}
+
+// ==================== PRÓXIMO PASSO ====================
+function proximoPasso(containerId, qtd, label, descricao, ctaTexto, ctaAba) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (qtd === 0) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="prox-card reveal in">
+      <div class="prox-check">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="prox-text">
+        <div class="prox-titulo">${qtd} ${label}</div>
+        <div class="prox-desc">${descricao}</div>
+      </div>
+      <button class="prox-btn" onclick="irPara('${ctaAba}')">${ctaTexto}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>`;
 }
 
 // ==================== EXPORT / IMPORT ====================
