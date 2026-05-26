@@ -3678,8 +3678,13 @@ function inicializarTutorial() {
 // ==================== LEMBRETE DE BACKUP ====================
 const DIAS_PARA_AVISO_BACKUP = 7;
 
-function temDados() {
-  return ingredientes.length > 0 || embalagens.length > 0 || receitas.length > 0;
+// Só vale a pena alertar sobre backup quando o usuário já investiu
+// tempo cadastrando: pelo menos 1 receita completa ou um volume
+// significativo de itens base.
+function temDadosSuficientes() {
+  if (receitas.length >= 1) return true;
+  if ((ingredientes.length + embalagens.length) >= 5) return true;
+  return false;
 }
 
 function diasDesdeUltimoBackup() {
@@ -3693,7 +3698,7 @@ function atualizarAvisoBackup() {
   const aviso = document.getElementById('backup-aviso');
   if (!aviso) return;
 
-  if (!temDados()) {
+  if (!temDadosSuficientes()) {
     aviso.classList.add('hidden');
     return;
   }
@@ -3710,7 +3715,12 @@ function atualizarAvisoBackup() {
 
   if (dias === null) {
     titulo.textContent = 'Faça seu primeiro backup';
-    desc.textContent = 'Você já tem dados cadastrados. Baixe um arquivo de backup pra não perder se algo acontecer com o celular.';
+    const qtdReceitas = receitas.length;
+    const qtdItens = ingredientes.length + embalagens.length;
+    const resumo = qtdReceitas > 0
+      ? `Você já tem ${qtdReceitas} ${qtdReceitas === 1 ? 'receita' : 'receitas'} montada${qtdReceitas === 1 ? '' : 's'}.`
+      : `Você já cadastrou ${qtdItens} itens.`;
+    desc.textContent = `${resumo} Baixe um backup pra não perder esse trabalho se algo acontecer com o celular.`;
     aviso.classList.remove('hidden');
   } else if (dias >= DIAS_PARA_AVISO_BACKUP) {
     titulo.textContent = `Faz ${dias} dias desde seu último backup`;
