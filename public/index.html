@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#5C1E22">
+<meta name="description" content="Calculadora de precificação para a Delicaldos — caldos artesanais. Calcule custo de ingredientes, embalagens e preço de venda com taxa do iFood.">
+<link rel="icon" type="image/jpeg" href="delicaldos-logo.jpg">
+<link rel="apple-touch-icon" href="delicaldos-logo.jpg">
+<title>Delicaldos — Precificação</title>
+
+<style>
+/* ==========================================================================
+   DELICALDOS — Sistema de Precificação
+   Direção: app moderno, leitura otimizada mobile
+   Tipografia: system font stack (SF Pro / Roboto / Segoe UI)
+   Paleta: OKLCH, neutros tingidos pro bordô da marca
+   Sem patterns proibidos: zero border-left colorido, zero gradient-text
+   ========================================================================== */
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  /* ---- FONTES (system stack — padrão de app nativo) ---- */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* ---- BRAND ---- */
+  --bordo:        oklch(0.42 0.13 25);
+  --bordo-deep:   oklch(0.30 0.12 25);
+  --bordo-soft:   oklch(0.55 0.11 25);
+  --coral:        oklch(0.68 0.18 38);
+  --coral-soft:   oklch(0.76 0.13 40);
+  --coral-tint:   oklch(0.94 0.05 45);
+
+  /* ---- NEUTROS tingidos pro bordô (hue 25, chroma baixíssimo) ---- */
+  --paper:        oklch(0.985 0.012 70);
+  --paper-2:      oklch(0.965 0.018 65);
+  --paper-3:      oklch(0.93  0.022 55);
+  --paper-4:      oklch(0.88  0.020 50);
+
+  --ink:          oklch(0.22 0.035 30);
+  --ink-2:        oklch(0.40 0.028 35);
+  --ink-3:        oklch(0.58 0.020 40);
+  --ink-4:        oklch(0.72 0.015 45);
+
+  /* ---- SEMÂNTICOS ---- */
+  --positivo:      oklch(0.50 0.14 150);
+  --positivo-bg:   oklch(0.94 0.045 150);
+  --negativo:      oklch(0.52 0.18 28);
+  --negativo-bg:   oklch(0.94 0.045 28);
+  --aviso:         oklch(0.62 0.14 75);
+  --aviso-bg:      oklch(0.95 0.06 80);
+
+  --ifood:         oklch(0.58 0.19 27);
+  --ifood-soft:    oklch(0.94 0.05 27);
+
+  /* ---- ESPAÇO (4pt scale) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px;  --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px;  --s-8: 64px;
+  --s-9: 96px;
+
+  /* ---- RAIO ---- */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 22px;
+
+  /* ---- SOMBRA ---- */
+  --shadow-1: 0 1px 2px oklch(0.30 0.10 25 / 0.06), 0 1px 1px oklch(0.30 0.10 25 / 0.04);
+  --shadow-2: 0 4px 14px oklch(0.30 0.10 25 / 0.08), 0 1px 2px oklch(0.30 0.10 25 / 0.04);
+  --shadow-3: 0 12px 36px oklch(0.30 0.10 25 / 0.14), 0 2px 8px oklch(0.30 0.10 25 / 0.06);
+
+  /* ---- EASING ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background:
+    radial-gradient(ellipse 1200px 600px at 50% -100px, oklch(0.96 0.025 55) 0%, transparent 60%),
+    var(--paper);
+  background-attachment: fixed;
+  color: var(--ink);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding-bottom: calc(var(--s-7) + env(safe-area-inset-bottom));
+  font-feature-settings: 'kern' 1, 'cv11' 1, 'ss01' 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Sutil textura de papel via SVG noise — performático, sem image */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.15 0 0 0 0 0.15 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   TIPOGRAFIA
+   ========================================================================== */
+
+.display, h1.display {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  color: var(--bordo);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  letter-spacing: -0.012em;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+header {
+  position: relative;
+  z-index: 10;
+  padding: var(--s-4) var(--s-4) var(--s-4);
+  padding-top: calc(var(--s-4) + env(safe-area-inset-top));
+  background:
+    linear-gradient(180deg, oklch(0.32 0.11 25) 0%, oklch(0.28 0.10 25) 100%);
+  color: var(--paper);
+  border-bottom: 1px solid oklch(0.20 0.08 25);
+}
+
+.header-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.logo {
+  width: 48px; height: 48px;
+  background: var(--paper);
+  border-radius: 50%;
+  padding: 4px;
+  display: grid; place-items: center;
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.25), inset 0 0 0 1px oklch(0.20 0.08 25 / 0.15);
+}
+.logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+
+.brand h1.display {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--paper);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}
+.brand .tagline {
+  font-size: 0.72rem;
+  color: oklch(0.85 0.04 60);
+  letter-spacing: 0.01em;
+}
+
+.save-pill {
+  font-size: 0.7rem;
+  color: oklch(0.85 0.04 60);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: oklch(0.25 0.09 25 / 0.5);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+  white-space: nowrap;
+}
+.save-pill.show { opacity: 1; }
+.save-pill::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: oklch(0.75 0.13 145);
+  animation: ping 1.5s var(--ease-out);
+}
+@keyframes ping { 0% { box-shadow: 0 0 0 0 oklch(0.75 0.13 145 / 0.7); } 100% { box-shadow: 0 0 0 10px oklch(0.75 0.13 145 / 0); } }
+
+/* ==========================================================================
+   NAV / TABS — underline animado, sem mudar fundo
+   ========================================================================== */
+
+nav.tabs {
+  background: var(--paper);
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 1px 0 var(--paper-3);
+  backdrop-filter: blur(6px);
+}
+
+.tabs-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+}
+.tabs-inner::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  position: relative;
+  background: none;
+  border: none;
+  padding: var(--s-3) var(--s-4) calc(var(--s-3) + 2px);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  color: var(--ink-3);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  scroll-snap-align: start;
+  transition: color 0.25s var(--ease-out);
+  letter-spacing: 0.005em;
+}
+
+.tab-btn .ico {
+  width: 16px; height: 16px;
+  opacity: 0.7;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--s-4); right: var(--s-4);
+  height: 2px;
+  background: var(--coral);
+  border-radius: 2px 2px 0 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.35s var(--ease-out);
+}
+
+@media (hover: hover) {
+  .tab-btn:hover { color: var(--coral); }
+  .tab-btn:hover .ico { opacity: 1; color: var(--coral); }
+}
+
+.tab-btn.active { color: var(--bordo); font-weight: 600; }
+.tab-btn.active .ico { opacity: 1; color: var(--coral); }
+.tab-btn.active::after { transform: scaleX(1); height: 3px; }
+
+/* ==========================================================================
+   MAIN
+   ========================================================================== */
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--s-5) var(--s-4) var(--s-7);
+}
+
+.tab-content { display: none; }
+.tab-content.active {
+  display: block;
+  animation: tab-in 0.45s var(--ease-out);
+}
+@keyframes tab-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   ABA HEADER — editorial
+   ========================================================================== */
+
+.aba-header {
+  margin-bottom: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aba-header .eyebrow { color: var(--coral); }
+.aba-header h2.display {
+  font-size: clamp(1.7rem, 5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+.aba-header .lead {
+  font-size: 0.95rem;
+  color: var(--ink-2);
+  max-width: 52ch;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   CARDS
+   ========================================================================== */
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  margin-bottom: var(--s-4);
+  box-shadow: var(--shadow-1);
+  position: relative;
+}
+
+.card h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin-bottom: var(--s-2);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.card h2 + .help-text { margin-top: -4px; margin-bottom: var(--s-4); }
+
+.card h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bordo);
+  margin: var(--s-6) 0 var(--s-3);
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+.card h3::before {
+  content: '';
+  width: 18px;
+  height: 3px;
+  background: var(--coral);
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+.card h3::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--paper-3);
+}
+
+.help-text {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  margin-bottom: var(--s-4);
+  max-width: 55ch;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   FORMULÁRIOS — campos autoexplicativos
+   ========================================================================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--s-4);
+}
+
+.form-group label {
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.form-group label .unit-badge {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ink-3);
+  background: var(--paper-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.form-group .hint {
+  font-size: 0.83rem;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.form-group .preview {
+  font-size: 0.85rem;
+  color: var(--bordo);
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--coral-tint);
+  border-radius: var(--r-sm);
+  font-weight: 500;
+  display: none;
+  font-variant-numeric: tabular-nums;
+}
+.form-group .preview.show { display: block; animation: fade-in 0.3s var(--ease-out); }
+@keyframes fade-in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+
+input[type="text"], input[type="number"], select {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: 12px 14px;
+  border: 1.5px solid var(--paper-3);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink);
+  width: 100%;
+  min-height: 50px;
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
+  font-variant-numeric: tabular-nums;
+}
+
+input::placeholder { color: var(--ink-4); font-style: italic; }
+
+input:hover, select:hover { border-color: var(--paper-4); }
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--coral);
+  box-shadow: 0 0 0 4px oklch(0.68 0.18 38 / 0.12);
+  background: var(--paper);
+}
+
+/* Esconder setinhas nativas do input number (padrão dos melhores apps) */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+select { cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23553028' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.input-wrap { position: relative; }
+.input-wrap .input-prefix,
+.input-wrap .input-suffix {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  font-weight: 600;
+  font-size: 0.95rem;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.input-wrap .input-prefix { left: 14px; }
+.input-wrap .input-suffix { right: 14px; }
+.input-wrap.has-prefix input { padding-left: 38px; }
+.input-wrap.has-suffix input { padding-right: 36px; }
+
+/* ==========================================================================
+   BOTÕES
+   ========================================================================== */
+
+button {
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  background: var(--bordo);
+  color: var(--paper);
+  min-height: 50px;
+  transition: transform 0.12s var(--ease-out), filter 0.2s var(--ease-out), background 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.005em;
+}
+@media (hover: hover) {
+  button:hover { filter: brightness(1.08); box-shadow: var(--shadow-2); }
+}
+button:active { transform: scale(0.97); filter: brightness(0.95); }
+
+button.btn-coral { background: var(--coral); }
+
+button.btn-ghost {
+  background: transparent;
+  color: var(--bordo);
+  border: 1.5px solid var(--paper-3);
+}
+button.btn-ghost:hover {
+  background: var(--paper-2);
+  border-color: var(--paper-4);
+  box-shadow: none;
+}
+
+button.btn-text {
+  background: transparent;
+  color: var(--ink-2);
+  padding: 8px 12px;
+  min-height: auto;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+button.btn-text:hover { color: var(--bordo); background: var(--paper-2); }
+
+button.btn-danger {
+  background: transparent;
+  color: var(--negativo);
+  border: 1.5px solid var(--negativo);
+}
+@media (hover: hover) {
+  button.btn-danger:hover { background: var(--negativo-bg); border-color: var(--negativo); }
+}
+
+button.btn-full { width: 100%; }
+
+button.btn-icon {
+  padding: 8px;
+  min-height: 40px;
+  min-width: 40px;
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: var(--r-sm);
+}
+button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); box-shadow: none; }
+
+/* ==========================================================================
+   LISTA DE INGREDIENTES / EMBALAGENS CADASTRADOS
+   (sem border-left, sem stripe)
+   ========================================================================== */
+
+.cadastro-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.cadastro-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  transition: border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.cadastro-item:hover {
+  border-color: var(--paper-4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-1);
+}
+
+.cadastro-item .nome {
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ink);
+}
+.cadastro-item .meta {
+  font-size: 0.82rem;
+  color: var(--ink-3);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.cadastro-item .preco {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bordo);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+.cadastro-item .preco-unit {
+  font-size: 0.72rem;
+  color: var(--ink-3);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* ==========================================================================
+   RECEITA — editor
+   ========================================================================== */
+
+.receita-itens {
+  background: var(--paper-2);
+  border-radius: var(--r-md);
+  padding: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.receita-item {
+  display: grid;
+  grid-template-columns: 1fr 90px auto;
+  gap: var(--s-2);
+  align-items: center;
+  padding: var(--s-3) 4px;
+  border-bottom: 1px solid var(--paper-3);
+}
+.receita-item:last-child { border-bottom: none; }
+
+.receita-item.header-row {
+  display: none;
+}
+.receita-item.header-row .col-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.receita-item.header-row .col-label.center { text-align: center; }
+.receita-item.header-row .col-label.right { text-align: right; }
+@media (min-width: 640px) {
+  .receita-item.header-row {
+    display: grid;
+    padding: 4px 4px 8px;
+    border-bottom: 1px solid var(--paper-3);
+    margin-bottom: 2px;
+  }
+}
+
+.receita-item select,
+.receita-item input {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  background: var(--paper);
+}
+
+.receita-item .input-wrap input { padding-right: 32px; }
+.receita-item .input-wrap .input-suffix {
+  font-size: 0.82rem;
+  font-weight: 600;
+  right: 10px;
+}
+
+.receita-item .custo-cell {
+  grid-column: 1 / -1;
+  text-align: right;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bordo);
+  font-variant-numeric: tabular-nums;
+  margin-top: -4px;
+}
+.receita-item .custo-cell::before {
+  content: '= ';
+  color: var(--ink-3);
+  font-weight: 400;
+}
+
+/* ==========================================================================
+   RESUMO E PREÇOS (sem border-left! usa tag superior)
+   ========================================================================== */
+
+.resumo {
+  background: var(--paper-2);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  margin: var(--s-4) 0;
+  border: 1px solid var(--paper-3);
+}
+
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  font-size: 0.95rem;
+}
+.resumo-linha .label { color: var(--ink-2); }
+.resumo-linha .valor {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo-linha.total {
+  padding-top: var(--s-3);
+  margin-top: var(--s-2);
+  border-top: 1px solid var(--paper-3);
+  font-size: 1.05rem;
+}
+.resumo-linha.total .label { color: var(--bordo); font-style: normal; font-weight: 600; }
+.resumo-linha.total .valor {
+  color: var(--bordo);
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* ---- PREÇOS BALCÃO / IFOOD — top tag, sem border-left ---- */
+
+.precos-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+  margin: var(--s-5) 0;
+}
+
+.preco-card {
+  background: var(--paper);
+  border: 1.5px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  position: relative;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+.preco-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+
+.preco-card .canal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  margin-bottom: var(--s-3);
+}
+.preco-card.balcao .canal-tag { background: var(--bordo); color: var(--paper); }
+.preco-card.ifood .canal-tag { background: var(--ifood); color: var(--paper); }
+
+.preco-card .preco-numero {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(2rem, 6.5vw, 2.7rem);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--s-3);
+  letter-spacing: -0.035em;
+}
+.preco-card .preco-numero .moeda {
+  font-size: 0.5em;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin-right: 4px;
+  vertical-align: 0.25em;
+  letter-spacing: 0;
+}
+
+.preco-card .preco-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 0;
+  font-size: 0.88rem;
+  color: var(--ink-2);
+}
+.preco-card .preco-linha .v {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.preco-card .lucro-final {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px dashed var(--paper-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.92rem;
+}
+.preco-card .lucro-final .label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--ink);
+}
+.preco-card .lucro-final .v {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.positivo { color: var(--positivo); }
+.negativo { color: var(--negativo); }
+
+/* ==========================================================================
+   CONFIG BAR (meta + iFood toggle)
+   ========================================================================== */
+
+.config-bar {
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  margin: var(--s-5) 0 var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.meta-grupo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.meta-grupo label {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.meta-grupo .input-wrap { width: 110px; flex-shrink: 0; }
+.meta-grupo .input-wrap input { padding-right: 30px; }
+
+.toggle-ifood {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--paper);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  user-select: none;
+  border: 1.5px solid var(--paper-3);
+  transition: border-color 0.25s var(--ease-out), background 0.25s var(--ease-out);
+}
+.toggle-ifood:has(input:checked) { border-color: var(--ifood); background: var(--ifood-soft); }
+
+.toggle-ifood .label-bloco { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toggle-ifood .label-bloco strong { color: var(--ifood); font-weight: 600; font-size: 0.95rem; }
+.toggle-ifood .label-bloco span { font-size: 0.78rem; color: var(--ink-3); }
+
+.toggle-switch {
+  appearance: none;
+  width: 48px; height: 26px;
+  background: var(--paper-4);
+  border-radius: 13px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s var(--ease-out);
+  flex-shrink: 0;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  background: var(--paper);
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform 0.3s var(--ease-out);
+  box-shadow: 0 2px 4px oklch(0 0 0 / 0.2);
+}
+.toggle-switch:checked { background: var(--ifood); }
+.toggle-switch:checked::after { transform: translateX(22px); }
+
+/* ==========================================================================
+   AÇÕES (botões da receita)
+   ========================================================================== */
+
+.acoes-receita {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+.backup-explica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+  padding: var(--s-4);
+  background: var(--paper-2);
+  border-radius: 12px;
+}
+.backup-item { display: flex; flex-direction: column; gap: 2px; }
+.backup-titulo {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.backup-desc {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   LISTA DE RECEITAS — recipe card feel
+   ========================================================================== */
+
+.receitas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+}
+
+.receita-card {
+  background: var(--paper);
+  border: 1.5px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  cursor: pointer;
+  transition: transform 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s-3);
+  align-items: center;
+}
+@media (hover: hover) {
+  .receita-card:hover {
+    border-color: var(--paper-4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+  }
+}
+.receita-card.editing {
+  border-color: var(--coral);
+  background: var(--coral-tint);
+}
+
+.receita-card .receita-nome {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.receita-card .receita-meta {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.receita-card .receita-preco-bloco { text-align: right; }
+.receita-card .receita-preco {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--bordo);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+.receita-card .receita-canal {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 4px;
+  font-weight: 600;
+}
+.receita-card .receita-canal.ifood-ativo { color: var(--ifood); }
+
+/* ==========================================================================
+   EMPTY STATES (com personalidade)
+   ========================================================================== */
+
+.empty {
+  text-align: center;
+  padding: var(--s-6) var(--s-4);
+  color: var(--ink-3);
+}
+.empty .ico-empty {
+  margin: 0 auto var(--s-3);
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  background: var(--paper-2);
+  border-radius: 50%;
+  color: var(--ink-3);
+}
+.empty .empty-titulo {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.empty .empty-dica { font-size: 0.9rem; max-width: 32ch; margin: 0 auto; }
+
+/* ==========================================================================
+   PAINEL
+   ========================================================================== */
+
+.painel-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+
+.stat {
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  position: relative;
+}
+.stat .stat-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.stat .stat-valor {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  color: var(--ink);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+.stat .stat-sub {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+.painel-receita {
+  background: var(--paper);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  margin-bottom: var(--s-2);
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.painel-receita:hover { border-color: var(--paper-4); box-shadow: var(--shadow-1); }
+
+.painel-receita .pr-nome {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 1.02rem;
+  color: var(--ink);
+  margin-bottom: var(--s-3);
+  letter-spacing: -0.012em;
+}
+.painel-receita .pr-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px dashed var(--paper-3);
+}
+.painel-receita .pr-linha:last-child { border-bottom: none; }
+.painel-receita .pr-linha .l { color: var(--ink-3); }
+.painel-receita .pr-linha .v { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   TOAST
+   ========================================================================== */
+
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--s-5) + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  width: calc(100% - 2rem);
+  max-width: 380px;
+}
+
+.toast {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 14px 18px;
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  display: flex; align-items: center; gap: 10px;
+  animation: toast-in 0.35s var(--ease-out);
+  pointer-events: auto;
+  border: 1px solid oklch(0.30 0.05 30);
+}
+.toast.sucesso { background: var(--positivo); border-color: oklch(0.45 0.14 150); }
+.toast.erro { background: var(--negativo); border-color: oklch(0.47 0.18 28); }
+@keyframes toast-in {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes toast-out {
+  to { transform: translateY(24px); opacity: 0; }
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: oklch(0.20 0.06 25 / 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: var(--s-4);
+  backdrop-filter: blur(3px);
+  animation: fade-bg 0.25s var(--ease-out);
+}
+.modal-overlay.active { display: flex; }
+@keyframes fade-bg { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--paper);
+  border-radius: var(--r-lg);
+  padding: var(--s-5);
+  max-width: 380px;
+  width: 100%;
+  box-shadow: var(--shadow-3);
+  animation: modal-in 0.35s var(--ease-out);
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.modal h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.015em;
+}
+.modal p {
+  color: var(--ink-2);
+  margin-bottom: var(--s-4);
+  font-size: 0.95rem;
+}
+.modal-acoes {
+  display: flex; gap: var(--s-2);
+}
+.modal-acoes button { flex: 1; }
+
+/* ==========================================================================
+   REVEAL ON SCROLL (animação leve, IntersectionObserver)
+   ========================================================================== */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger via delay aplicado no JS */
+
+/* ==========================================================================
+   TUTORIAL BANNER
+   ========================================================================== */
+
+.tutorial-banner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s-3);
+  align-items: start;
+  padding: var(--s-4);
+  margin-bottom: var(--s-4);
+  background: var(--coral-tint);
+  border: 1px solid oklch(0.85 0.08 45);
+  border-radius: var(--r-md);
+  animation: tab-in 0.5s var(--ease-out);
+}
+.tutorial-banner.hidden { display: none; }
+
+.tutorial-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--coral);
+  color: var(--paper);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+
+.tutorial-text {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.tutorial-text strong {
+  font-weight: 700;
+  color: var(--bordo);
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.98rem;
+}
+
+.tutorial-close {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  min-height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+.tutorial-close:hover {
+  color: var(--bordo);
+  background: oklch(0.96 0.04 40);
+}
+
+/* Flash sutil no editor quando "Nova Receita" é clicado */
+@keyframes flash-card {
+  0% { box-shadow: var(--shadow-1); border-color: var(--paper-3); }
+  30% { box-shadow: 0 0 0 4px var(--coral-tint), var(--shadow-2); border-color: var(--coral-soft); }
+  100% { box-shadow: var(--shadow-1); border-color: var(--paper-3); }
+}
+.card.flash { animation: flash-card 1.1s var(--ease-out); }
+
+/* ==========================================================================
+   BREAKPOINTS — Tablet (≥640px)
+   ========================================================================== */
+
+@media (min-width: 640px) {
+  main { padding: var(--s-6) var(--s-5) var(--s-8); }
+  header { padding: var(--s-5) var(--s-5); }
+
+  .logo { width: 58px; height: 58px; }
+  .brand h1.display { font-size: 1.75rem; }
+
+  .card { padding: var(--s-6); }
+  .card h2 { font-size: 1.5rem; }
+  .aba-header h2.display { font-size: 2.6rem; }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-4);
+  }
+
+  .precos-grid { grid-template-columns: 1fr 1fr; }
+  .painel-stats { grid-template-columns: repeat(4, 1fr); }
+  .receitas-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .acoes-receita { flex-direction: row; }
+  .acoes-receita button { flex: 1; }
+
+  .config-bar { flex-direction: row; align-items: center; justify-content: space-between; }
+  .toggle-ifood { min-width: 240px; }
+
+  .receita-item {
+    grid-template-columns: 2fr 100px 110px auto;
+  }
+  .receita-item .custo-cell {
+    grid-column: 3;
+    text-align: right;
+    margin-top: 0;
+  }
+}
+
+/* ==========================================================================
+   BREAKPOINTS — Desktop (≥1024px)
+   ========================================================================== */
+
+@media (min-width: 1024px) {
+  main { padding: var(--s-7) var(--s-6) var(--s-9); }
+  .receitas-grid { grid-template-columns: repeat(3, 1fr); }
+  .aba-header h2.display { font-size: 3.1rem; }
+
+  /* Asimétrico: layout 2 colunas para a aba Receitas */
+  #tab-receitas.has-desktop-layout {
+    /* Mantém layout simples — assimetria viria com mais conteúdo */
+  }
+}
+
+/* ==========================================================================
+   ACESSIBILIDADE
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="logo">
+      <img src="delicaldos-logo.jpg" alt="Delicaldos"
+        onerror="this.onerror=null;this.style.display='none';this.parentElement.innerHTML='<span style=&quot;color:oklch(0.42 0.13 25);font-size:0.6rem;font-weight:700;text-align:center;line-height:1.05;letter-spacing:-0.02em&quot;>Deli<br>caldos</span>'">
+    </div>
+    <div class="brand">
+      <h1 class="display">Delicaldos</h1>
+      <div class="tagline">precificação artesanal</div>
+    </div>
+    <div class="save-pill" id="save-indicator">Salvo</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner">
+    <button class="tab-btn active" data-tab="receitas">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10" stroke-linecap="round"/></svg>
+      Receitas
+    </button>
+    <button class="tab-btn" data-tab="ingredientes">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12c0-2 2-4 4-4s4 2 4 4-2 4-4 4-4-2-4-4z"/></svg>
+      Ingredientes
+    </button>
+    <button class="tab-btn" data-tab="embalagens">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16v13a1 1 0 01-1 1H5a1 1 0 01-1-1V7z"/><path d="M4 7l2-3h12l2 3M9 12h6" stroke-linecap="round"/></svg>
+      Embalagens
+    </button>
+    <button class="tab-btn" data-tab="painel">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m6 10V5m6 14v-7m4 7H4" stroke-linecap="round"/></svg>
+      Painel
+    </button>
+    <button class="tab-btn" data-tab="config">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 008.91 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.91a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Ajustes
+    </button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ===================== ABA RECEITAS ===================== -->
+  <section class="tab-content active" id="tab-receitas">
+    <div class="aba-header">
+      <div class="eyebrow">Suas Receitas</div>
+      <h2 class="display">O preço certo de cada caldo</h2>
+      <p class="lead">Toque numa receita pra ver ou editar. O preço sai automático conforme você mexe.</p>
+    </div>
+
+    <div class="tutorial-banner" id="tutorial-banner">
+      <div class="tutorial-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      </div>
+      <div class="tutorial-text">
+        <strong>Bem-vinda!</strong>
+        Os itens com "(exemplo)" são só pra você ver como funciona. Comece apagando eles e cadastrando os seus próprios ingredientes, embalagens e receitas.
+      </div>
+      <button class="tutorial-close" onclick="fecharTutorial()" aria-label="Fechar dica">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+
+    <div class="card reveal">
+      <div id="receitas-lista"></div>
+      <button class="btn-coral btn-full" style="margin-top: var(--s-4)" onclick="novaReceita()">
+        + Criar Nova Receita
+      </button>
+    </div>
+
+    <div class="card reveal" id="card-editor">
+      <h2 id="receita-titulo">Nova Receita</h2>
+      <p class="help-text">Preencha ingredientes, embalagens e a meta de lucro. O sistema calcula o preço pra você ganhar o que planejou.</p>
+
+      <div class="form-group">
+        <label>Nome do caldo</label>
+        <input type="text" id="receita-nome" placeholder="Ex: Frango Rústico, Camarão...">
+        <span class="hint">Como você chama esse caldo no cardápio.</span>
+      </div>
+
+      <h3>Ingredientes</h3>
+      <div class="receita-itens" id="receita-ingredientes"></div>
+      <button class="btn-ghost btn-full" style="margin-top: var(--s-3)" onclick="adicionarLinhaIngrediente()">
+        + Adicionar ingrediente
+      </button>
+
+      <h3>Embalagens</h3>
+      <div class="receita-itens" id="receita-embalagens"></div>
+      <button class="btn-ghost btn-full" style="margin-top: var(--s-3)" onclick="adicionarLinhaEmbalagem()">
+        + Adicionar embalagem
+      </button>
+
+      <div class="config-bar">
+        <div class="meta-grupo">
+          <label>Meta de lucro</label>
+          <div class="input-wrap has-suffix">
+            <input type="number" id="meta-lucro" value="60" min="0" step="any" oninput="recalcularReceita()">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <label class="toggle-ifood">
+          <div class="label-bloco">
+            <strong>Vender no iFood</strong>
+            <span>Calcula preço com taxa</span>
+          </div>
+          <input type="checkbox" id="vende-ifood" class="toggle-switch" onchange="recalcularReceita()">
+        </label>
+      </div>
+
+      <div class="resumo">
+        <div class="resumo-linha"><span class="label">Ingredientes</span><span class="valor" id="resumo-custo-ing">R$ 0,00</span></div>
+        <div class="resumo-linha"><span class="label">Embalagens</span><span class="valor" id="resumo-custo-emb">R$ 0,00</span></div>
+        <div class="resumo-linha total"><span class="label">Custo total</span><span class="valor" id="resumo-custo-total">R$ 0,00</span></div>
+      </div>
+
+      <div class="precos-grid">
+        <div class="preco-card balcao">
+          <span class="canal-tag">Balcão</span>
+          <div class="preco-numero"><span class="moeda">R$</span><span id="preco-balcao-num">0,00</span></div>
+          <div class="preco-linha"><span>Custo</span><span class="v" id="preco-balcao-custo">R$ 0,00</span></div>
+          <div class="preco-linha"><span>Margem</span><span class="v" id="preco-balcao-margem">0%</span></div>
+          <div class="lucro-final">
+            <span class="label">Você lucra</span>
+            <span class="v positivo" id="preco-balcao-lucro">R$ 0,00</span>
+          </div>
+        </div>
+        <div class="preco-card ifood">
+          <span class="canal-tag">iFood</span>
+          <div class="preco-numero"><span class="moeda">R$</span><span id="preco-ifood-num">0,00</span></div>
+          <div class="preco-linha"><span>Você recebe</span><span class="v" id="preco-ifood-recebe">R$ 0,00</span></div>
+          <div class="preco-linha"><span>Taxa iFood</span><span class="v" id="preco-ifood-taxa">R$ 0,00</span></div>
+          <div class="lucro-final">
+            <span class="label">Lucro líquido</span>
+            <span class="v positivo" id="preco-ifood-lucro">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="acoes-receita">
+        <button onclick="salvarReceita()">Salvar receita</button>
+        <button class="btn-ghost" onclick="novaReceita()">Limpar</button>
+        <button class="btn-danger" id="btn-excluir" onclick="excluirReceita()" style="display:none">Excluir</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABA INGREDIENTES ===================== -->
+  <section class="tab-content" id="tab-ingredientes">
+    <div class="aba-header">
+      <div class="eyebrow">Despensa</div>
+      <h2 class="display">Ingredientes</h2>
+      <p class="lead">Cadastre o que você compra. O custo por grama sai sozinho.</p>
+    </div>
+
+    <div class="card reveal">
+      <h2>Novo ingrediente</h2>
+
+      <div class="form-group">
+        <label>Nome <span class="unit-badge">como você chama</span></label>
+        <input type="text" id="ing-nome" placeholder="Ex: Frango, Camarão, Aipim...">
+        <span class="hint">Pode ser o nome que você usa na cozinha mesmo.</span>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Peso do pacote <span class="unit-badge">em gramas</span></label>
+          <div class="input-wrap has-suffix">
+            <input type="number" id="ing-peso" placeholder="1000" min="0" step="any" oninput="previewIng()">
+            <span class="input-suffix">g</span>
+          </div>
+          <span class="hint">Quantos gramas vêm no pacote que você compra.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Quanto você pagou</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="ing-preco" placeholder="0,00" min="0" step="any" oninput="previewIng()">
+          </div>
+          <span class="hint">O preço do pacote inteiro, não por kg.</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0">
+        <div class="preview" id="ing-preview"></div>
+      </div>
+
+      <button class="btn-coral btn-full" style="margin-top: var(--s-4)" onclick="adicionarIngrediente()">
+        Adicionar ingrediente
+      </button>
+    </div>
+
+    <div class="card reveal">
+      <h2>Cadastrados</h2>
+      <div id="ingredientes-lista"></div>
+    </div>
+  </section>
+
+  <!-- ===================== ABA EMBALAGENS ===================== -->
+  <section class="tab-content" id="tab-embalagens">
+    <div class="aba-header">
+      <div class="eyebrow">Apoio</div>
+      <h2 class="display">Embalagens</h2>
+      <p class="lead">Potes, tampas, sacolas, talheres — tudo que vai junto com o caldo.</p>
+    </div>
+
+    <div class="card reveal">
+      <h2>Nova embalagem</h2>
+
+      <div class="form-group">
+        <label>Tipo <span class="unit-badge">o que é</span></label>
+        <input type="text" id="emb-nome" placeholder="Ex: Pote 500ml, Sacola, Tampa...">
+        <span class="hint">Pode ser pote, tampa, sacola, talher, etiqueta...</span>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Unidades no pacote <span class="unit-badge">qtd</span></label>
+          <input type="number" id="emb-unid" placeholder="50" min="1" step="1" oninput="previewEmb()">
+          <span class="hint">Quantos vêm no fardo/pacote.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Quanto você pagou</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="emb-preco" placeholder="0,00" min="0" step="any" oninput="previewEmb()">
+          </div>
+          <span class="hint">O preço do pacote inteiro.</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 0">
+        <div class="preview" id="emb-preview"></div>
+      </div>
+
+      <button class="btn-coral btn-full" style="margin-top: var(--s-4)" onclick="adicionarEmbalagem()">
+        Adicionar embalagem
+      </button>
+    </div>
+
+    <div class="card reveal">
+      <h2>Cadastradas</h2>
+      <div id="embalagens-lista"></div>
+    </div>
+  </section>
+
+  <!-- ===================== ABA AJUSTES ===================== -->
+  <section class="tab-content" id="tab-config">
+    <div class="aba-header">
+      <div class="eyebrow">Configuração</div>
+      <h2 class="display">Ajustes</h2>
+      <p class="lead">Configure as taxas que o iFood cobra e gerencie seus dados.</p>
+    </div>
+
+    <div class="card reveal">
+      <h2>Taxa do iFood</h2>
+      <p class="help-text">Quanto o iFood desconta de cada venda. Com isso o sistema descobre o preço a cobrar no app pra você manter o mesmo lucro do balcão.</p>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Comissão <span class="unit-badge">%</span></label>
+          <div class="input-wrap has-suffix">
+            <input type="number" id="cfg-ifood-pct" min="0" max="100" step="any" oninput="atualizarConfig()">
+            <span class="input-suffix">%</span>
+          </div>
+          <span class="hint">Porcentagem que o iFood tira de cada pedido.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Taxa fixa</label>
+          <div class="input-wrap has-prefix">
+            <span class="input-prefix">R$</span>
+            <input type="number" id="cfg-ifood-fixa" min="0" step="any" oninput="atualizarConfig()">
+          </div>
+          <span class="hint">Valor fixo por pedido (geralmente 0).</span>
+        </div>
+      </div>
+
+      <div class="resumo" style="margin-top: var(--s-4)">
+        <div class="resumo-linha"><span class="label" style="font-weight:600;color:var(--ink)">Planos comuns:</span><span></span></div>
+        <div class="resumo-linha"><span class="label">Entrega própria</span><span class="valor">~ 12 %</span></div>
+        <div class="resumo-linha"><span class="label">Entrega pelo iFood</span><span class="valor">~ 23 %</span></div>
+        <div class="resumo-linha"><span class="label" style="font-size:0.78rem;font-style:italic;color:var(--ink-3)">Confira no Portal do Parceiro.</span><span></span></div>
+      </div>
+    </div>
+
+    <div class="card reveal">
+      <h2>Seus dados</h2>
+      <p class="help-text">Seus ingredientes, embalagens e receitas ficam salvos só <strong>neste celular, neste navegador</strong>. Se você limpar o histórico, trocar de aparelho ou usar outro navegador, perde tudo. Faça um backup de vez em quando pra não correr esse risco.</p>
+      <div class="backup-explica">
+        <div class="backup-item">
+          <div class="backup-titulo">Exportar backup</div>
+          <div class="backup-desc">Baixa um arquivo com tudo que você cadastrou. Guarde no e-mail, WhatsApp ou Google Drive.</div>
+        </div>
+        <div class="backup-item">
+          <div class="backup-titulo">Importar backup</div>
+          <div class="backup-desc">Carrega um arquivo de backup que você baixou antes. Substitui os dados atuais.</div>
+        </div>
+        <div class="backup-item">
+          <div class="backup-titulo">Restaurar padrão</div>
+          <div class="backup-desc">Apaga tudo e volta pros exemplos do começo. Use só se quiser recomeçar do zero.</div>
+        </div>
+      </div>
+      <div class="acoes-receita">
+        <button class="btn-ghost" onclick="exportarDados()">Exportar backup</button>
+        <button class="btn-ghost" onclick="document.getElementById('importar-input').click()">Importar backup</button>
+        <input type="file" id="importar-input" accept=".json" style="display:none" onchange="importarDados(event)">
+        <button class="btn-danger" onclick="resetarDados()">Restaurar padrão</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABA PAINEL ===================== -->
+  <section class="tab-content" id="tab-painel">
+    <div class="aba-header">
+      <div class="eyebrow">Visão Geral</div>
+      <h2 class="display">Painel</h2>
+      <p class="lead">Resumo de todas as receitas com lucro de cada uma.</p>
+    </div>
+
+    <div class="painel-stats reveal" id="painel-stats"></div>
+
+    <div class="card reveal">
+      <h2>Detalhes por caldo</h2>
+      <div id="painel-receitas"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-titulo">Confirmar</h3>
+    <p id="modal-mensagem"></p>
+    <div class="modal-acoes">
+      <button class="btn-ghost" onclick="fecharModal(false)">Cancelar</button>
+      <button id="modal-confirmar" onclick="fecharModal(true)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ==================== ESTADO ====================
+let ingredientes = [], embalagens = [], receitas = [];
+let config = { ifoodPct: 23, ifoodFixa: 0 };
+let receitaAtual = vazia();
+let modalCallback = null;
+
+function vazia() {
+  return { id: null, nome: '', itens: [], embalagensUsadas: [], metaLucro: 60, vendeIfood: false };
+}
+
+// ==================== DADOS PADRÃO ====================
+// Exemplos mínimos pro modo tutorial — alunas aprendem cadastrando o resto
+const INGREDIENTES_PADRAO = [
+  { id: 1, nome: 'Aipim (exemplo)',  peso: 1000, preco: 5.00 },
+  { id: 2, nome: 'Frango (exemplo)', peso: 1000, preco: 18.00 }
+];
+
+const EMBALAGENS_PADRAO = [
+  { id: 1, nome: 'Pote 500ml (exemplo)',  unidades: 50, preco: 35.00 },
+  { id: 2, nome: 'Tampa 500ml (exemplo)', unidades: 50, preco: 15.00 }
+];
+
+const RECEITAS_PADRAO = [
+  { id: 1, nome: 'Caldo de Frango (exemplo)', metaLucro: 65, vendeIfood: false,
+    itens: [{ingId:1, qtd:120},{ingId:2, qtd:150}],
+    embalagensUsadas: [{embId:1, qtd:1},{embId:2, qtd:1}] }
+];
+
+// ==================== PERSISTÊNCIA ====================
+function salvarDados() {
+  localStorage.setItem('delicaldos_ingredientes', JSON.stringify(ingredientes));
+  localStorage.setItem('delicaldos_embalagens', JSON.stringify(embalagens));
+  localStorage.setItem('delicaldos_receitas', JSON.stringify(receitas));
+  localStorage.setItem('delicaldos_config', JSON.stringify(config));
+  flashSaved();
+}
+
+function carregarDados() {
+  try {
+    ingredientes = JSON.parse(localStorage.getItem('delicaldos_ingredientes')) || [...INGREDIENTES_PADRAO];
+    embalagens = JSON.parse(localStorage.getItem('delicaldos_embalagens')) || [...EMBALAGENS_PADRAO];
+    receitas = JSON.parse(localStorage.getItem('delicaldos_receitas')) || RECEITAS_PADRAO.map(r => JSON.parse(JSON.stringify(r)));
+    config = JSON.parse(localStorage.getItem('delicaldos_config')) || { ifoodPct: 23, ifoodFixa: 0 };
+    receitas.forEach(r => { if (!r.embalagensUsadas) r.embalagensUsadas = []; });
+  } catch (e) {
+    ingredientes = [...INGREDIENTES_PADRAO];
+    embalagens = [...EMBALAGENS_PADRAO];
+    receitas = RECEITAS_PADRAO.map(r => JSON.parse(JSON.stringify(r)));
+    config = { ifoodPct: 23, ifoodFixa: 0 };
+  }
+}
+
+// ==================== UTILS ====================
+const brl = v => 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ',');
+const brlNum = v => (Number(v) || 0).toFixed(2).replace('.', ',');
+// Versão com 3 decimais — usada em custos unitários pequenos (por grama, por unidade, proporcionais)
+const brlPrec = v => 'R$ ' + (Number(v) || 0).toFixed(3).replace('.', ',');
+const pct = v => (Number(v) || 0).toFixed(1).replace('.', ',') + '%';
+const novoId = arr => arr.length === 0 ? 1 : Math.max(...arr.map(x => x.id)) + 1;
+const esc = s => { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; };
+
+let saveTimer;
+function flashSaved() {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.classList.add('show');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ==================== TOAST ====================
+function toast(msg, tipo = '') {
+  const cont = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + tipo;
+  t.textContent = msg;
+  cont.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'toast-out 0.3s var(--ease-out) forwards';
+    setTimeout(() => t.remove(), 320);
+  }, 2400);
+}
+
+// ==================== MODAL ====================
+function confirmar(titulo, mensagem, cb, txt = 'Confirmar', tipo = '') {
+  document.getElementById('modal-titulo').textContent = titulo;
+  document.getElementById('modal-mensagem').textContent = mensagem;
+  const btn = document.getElementById('modal-confirmar');
+  btn.textContent = txt;
+  btn.className = tipo === 'perigo' ? 'btn-danger' : '';
+  modalCallback = cb;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function fecharModal(ok) {
+  document.getElementById('modal-overlay').classList.remove('active');
+  if (ok && modalCallback) modalCallback();
+  modalCallback = null;
+}
+
+// ==================== ABAS ====================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = document.getElementById('tab-' + btn.dataset.tab);
+    tab.classList.add('active');
+    setupReveal(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (btn.dataset.tab === 'painel') renderPainel();
+    if (btn.dataset.tab === 'receitas') renderReceitas();
+  });
+});
+
+function irPara(aba) {
+  const b = document.querySelector(`[data-tab="${aba}"]`);
+  if (b) b.click();
+}
+
+// ==================== REVEAL ON SCROLL ====================
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      const idx = parseInt(e.target.dataset.staggerIdx || 0, 10);
+      e.target.style.transitionDelay = (idx * 60) + 'ms';
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+function setupReveal(scope = document) {
+  const els = scope.querySelectorAll('.reveal:not(.in)');
+  els.forEach((el, i) => {
+    el.dataset.staggerIdx = i;
+    el.style.transitionDelay = '';
+    io.observe(el);
+  });
+}
+
+// ==================== CONFIG IFOOD ====================
+function atualizarConfig() {
+  config.ifoodPct = parseFloat(document.getElementById('cfg-ifood-pct').value) || 0;
+  config.ifoodFixa = parseFloat(document.getElementById('cfg-ifood-fixa').value) || 0;
+  salvarDados();
+  recalcularReceita();
+}
+function renderConfig() {
+  document.getElementById('cfg-ifood-pct').value = config.ifoodPct;
+  document.getElementById('cfg-ifood-fixa').value = config.ifoodFixa;
+}
+
+// ==================== PREVIEW (campos autoexplicativos) ====================
+function previewIng() {
+  const peso = parseFloat(document.getElementById('ing-peso').value);
+  const preco = parseFloat(document.getElementById('ing-preco').value);
+  const p = document.getElementById('ing-preview');
+  if (peso > 0 && preco > 0) {
+    const por100 = (preco / peso) * 100;
+    p.innerHTML = `Vai custar <strong>${brlPrec(por100)}</strong> a cada 100&thinsp;g de ${escNomeIng()}.`;
+    p.classList.add('show');
+  } else {
+    p.classList.remove('show');
+  }
+}
+function escNomeIng() {
+  const n = document.getElementById('ing-nome').value.trim();
+  return n ? esc(n) : 'ingrediente';
+}
+
+function previewEmb() {
+  const u = parseFloat(document.getElementById('emb-unid').value);
+  const p = parseFloat(document.getElementById('emb-preco').value);
+  const el = document.getElementById('emb-preview');
+  if (u > 0 && p > 0) {
+    const cu = p / u;
+    el.innerHTML = `Cada unidade vai sair por <strong>${brlPrec(cu)}</strong>.`;
+    el.classList.add('show');
+  } else {
+    el.classList.remove('show');
+  }
+}
+
+// ==================== INGREDIENTES ====================
+function adicionarIngrediente() {
+  const nome = document.getElementById('ing-nome').value.trim();
+  const peso = parseFloat(document.getElementById('ing-peso').value);
+  const preco = parseFloat(document.getElementById('ing-preco').value);
+
+  if (!nome) return toast('Informe o nome', 'erro');
+  if (!peso || peso <= 0) return toast('Informe o peso do pacote', 'erro');
+  if (isNaN(preco) || preco < 0) return toast('Informe o valor pago', 'erro');
+
+  ingredientes.push({ id: novoId(ingredientes), nome, peso, preco });
+  salvarDados();
+  renderIngredientes();
+  toast(nome + ' adicionado', 'sucesso');
+
+  document.getElementById('ing-nome').value = '';
+  document.getElementById('ing-peso').value = '';
+  document.getElementById('ing-preco').value = '';
+  document.getElementById('ing-preview').classList.remove('show');
+  document.getElementById('ing-nome').focus();
+}
+
+function removerIngrediente(id) {
+  const i = ingredientes.find(x => x.id === id);
+  if (!i) return;
+  confirmar('Remover ingrediente?', `"${i.nome}" será removido das receitas que o usam.`, () => {
+    ingredientes = ingredientes.filter(x => x.id !== id);
+    receitas.forEach(r => { r.itens = r.itens.filter(it => it.ingId !== id); });
+    salvarDados();
+    renderIngredientes();
+    toast('Removido');
+  }, 'Remover', 'perigo');
+}
+
+function renderIngredientes() {
+  const div = document.getElementById('ingredientes-lista');
+  if (ingredientes.length === 0) {
+    div.innerHTML = emptyState('Sem ingredientes', 'Cadastre o primeiro no formulário acima.');
+    return;
+  }
+  let html = '<div class="cadastro-lista">';
+  ingredientes.forEach(i => {
+    const cg = i.preco / i.peso;
+    html += `<div class="cadastro-item">
+      <div>
+        <div class="nome">${esc(i.nome)}</div>
+        <div class="meta">${i.peso} g · ${brl(i.preco)} no pacote</div>
+      </div>
+      <div class="preco">${brlPrec(cg * 100)} <div class="preco-unit">/ 100 g</div></div>
+      <button class="btn-icon" onclick="removerIngrediente(${i.id})" aria-label="Remover">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/></svg>
+      </button>
+    </div>`;
+  });
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+// ==================== EMBALAGENS ====================
+function adicionarEmbalagem() {
+  const nome = document.getElementById('emb-nome').value.trim();
+  const unidades = parseFloat(document.getElementById('emb-unid').value);
+  const preco = parseFloat(document.getElementById('emb-preco').value);
+
+  if (!nome) return toast('Informe o tipo', 'erro');
+  if (!unidades || unidades <= 0) return toast('Informe quantas unidades', 'erro');
+  if (isNaN(preco) || preco < 0) return toast('Informe o valor pago', 'erro');
+
+  embalagens.push({ id: novoId(embalagens), nome, unidades, preco });
+  salvarDados();
+  renderEmbalagens();
+  toast(nome + ' adicionado', 'sucesso');
+
+  document.getElementById('emb-nome').value = '';
+  document.getElementById('emb-unid').value = '';
+  document.getElementById('emb-preco').value = '';
+  document.getElementById('emb-preview').classList.remove('show');
+  document.getElementById('emb-nome').focus();
+}
+
+function removerEmbalagem(id) {
+  const e = embalagens.find(x => x.id === id);
+  if (!e) return;
+  confirmar('Remover embalagem?', `"${e.nome}" será removida das receitas que a usam.`, () => {
+    embalagens = embalagens.filter(x => x.id !== id);
+    receitas.forEach(r => {
+      if (r.embalagensUsadas) r.embalagensUsadas = r.embalagensUsadas.filter(eu => eu.embId !== id);
+    });
+    salvarDados();
+    renderEmbalagens();
+    toast('Removido');
+  }, 'Remover', 'perigo');
+}
+
+function renderEmbalagens() {
+  const div = document.getElementById('embalagens-lista');
+  if (embalagens.length === 0) {
+    div.innerHTML = emptyState('Sem embalagens', 'Cadastre a primeira no formulário acima.');
+    return;
+  }
+  let html = '<div class="cadastro-lista">';
+  embalagens.forEach(e => {
+    const cu = e.preco / e.unidades;
+    html += `<div class="cadastro-item">
+      <div>
+        <div class="nome">${esc(e.nome)}</div>
+        <div class="meta">${e.unidades} un · ${brl(e.preco)} no pacote</div>
+      </div>
+      <div class="preco">${brlPrec(cu)} <div class="preco-unit">/ unidade</div></div>
+      <button class="btn-icon" onclick="removerEmbalagem(${e.id})" aria-label="Remover">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/></svg>
+      </button>
+    </div>`;
+  });
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+// ==================== RECEITAS ====================
+function novaReceita(opts = {}) {
+  receitaAtual = vazia();
+  document.getElementById('receita-titulo').textContent = 'Nova Receita';
+  document.getElementById('receita-nome').value = '';
+  document.getElementById('meta-lucro').value = 60;
+  document.getElementById('vende-ifood').checked = false;
+  document.getElementById('btn-excluir').style.display = 'none';
+  renderIngredientesReceita();
+  renderEmbalagensReceita();
+  recalcularReceita();
+  renderReceitas();
+
+  if (opts.scroll !== false) {
+    const editor = document.getElementById('card-editor');
+    editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    editor.classList.remove('flash');
+    void editor.offsetWidth;
+    editor.classList.add('flash');
+    setTimeout(() => document.getElementById('receita-nome').focus({ preventScroll: true }), 350);
+  }
+}
+
+function carregarReceita(id) {
+  const r = receitas.find(x => x.id === id);
+  if (!r) return;
+  receitaAtual = JSON.parse(JSON.stringify(r));
+  if (!receitaAtual.embalagensUsadas) receitaAtual.embalagensUsadas = [];
+
+  document.getElementById('receita-titulo').textContent = r.nome;
+  document.getElementById('receita-nome').value = r.nome;
+  document.getElementById('meta-lucro').value = r.metaLucro;
+  document.getElementById('vende-ifood').checked = !!r.vendeIfood;
+  document.getElementById('btn-excluir').style.display = '';
+  renderIngredientesReceita();
+  renderEmbalagensReceita();
+  recalcularReceita();
+  renderReceitas();
+  document.getElementById('card-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function adicionarLinhaIngrediente() {
+  if (ingredientes.length === 0) {
+    toast('Cadastre ingredientes primeiro', 'erro');
+    irPara('ingredientes');
+    return;
+  }
+  receitaAtual.itens.push({ ingId: ingredientes[0].id, qtd: 100 });
+  renderIngredientesReceita();
+  recalcularReceita();
+}
+
+function removerLinhaIngrediente(idx) {
+  receitaAtual.itens.splice(idx, 1);
+  renderIngredientesReceita();
+  recalcularReceita();
+}
+
+function atualizarItem(idx, campo, valor) {
+  if (campo === 'ingId') receitaAtual.itens[idx].ingId = parseInt(valor);
+  if (campo === 'qtd') receitaAtual.itens[idx].qtd = parseFloat(valor) || 0;
+  // Atualiza só a célula de custo dessa linha — sem rerender (preserva foco do input)
+  const item = receitaAtual.itens[idx];
+  const ing = ingredientes.find(i => i.id === item.ingId);
+  const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
+  const linhas = document.querySelectorAll('#receita-ingredientes .receita-item:not(.header-row)');
+  if (linhas[idx]) linhas[idx].querySelector('.custo-cell').textContent = brlPrec(custo);
+  recalcularReceita();
+}
+
+function renderIngredientesReceita() {
+  const div = document.getElementById('receita-ingredientes');
+  if (receitaAtual.itens.length === 0) {
+    div.innerHTML = `<div style="padding: var(--s-3); text-align: center; color: var(--ink-3); font-style: italic; font-size: 0.9rem">Toque em "Adicionar ingrediente" abaixo</div>`;
+    return;
+  }
+  let html = `<div class="receita-item header-row">
+    <div class="col-label">Ingrediente</div>
+    <div class="col-label center">Qtd (g)</div>
+    <div class="col-label right">Custo</div>
+  </div>`;
+  receitaAtual.itens.forEach((item, idx) => {
+    const ing = ingredientes.find(i => i.id === item.ingId);
+    const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
+    let opts = '';
+    ingredientes.forEach(i => {
+      opts += `<option value="${i.id}" ${i.id === item.ingId ? 'selected' : ''}>${esc(i.nome)}</option>`;
+    });
+    html += `<div class="receita-item">
+      <select onchange="atualizarItem(${idx}, 'ingId', this.value)">${opts}</select>
+      <div class="input-wrap has-suffix">
+        <input type="number" min="0" step="any" value="${item.qtd}" placeholder="0" oninput="atualizarItem(${idx}, 'qtd', this.value)">
+        <span class="input-suffix">g</span>
+      </div>
+      <button class="btn-icon" onclick="removerLinhaIngrediente(${idx})" aria-label="Remover">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+      <div class="custo-cell">${brlPrec(custo)}</div>
+    </div>`;
+  });
+  div.innerHTML = html;
+}
+
+// ==================== EMBALAGENS NA RECEITA ====================
+function adicionarLinhaEmbalagem() {
+  if (embalagens.length === 0) {
+    toast('Cadastre embalagens primeiro', 'erro');
+    irPara('embalagens');
+    return;
+  }
+  receitaAtual.embalagensUsadas.push({ embId: embalagens[0].id, qtd: 1 });
+  renderEmbalagensReceita();
+  recalcularReceita();
+}
+
+function removerLinhaEmbalagem(idx) {
+  receitaAtual.embalagensUsadas.splice(idx, 1);
+  renderEmbalagensReceita();
+  recalcularReceita();
+}
+
+function atualizarEmb(idx, campo, valor) {
+  if (campo === 'embId') receitaAtual.embalagensUsadas[idx].embId = parseInt(valor);
+  if (campo === 'qtd') receitaAtual.embalagensUsadas[idx].qtd = parseFloat(valor) || 0;
+  // Atualiza só a célula de custo — preserva foco
+  const item = receitaAtual.embalagensUsadas[idx];
+  const emb = embalagens.find(e => e.id === item.embId);
+  const custo = emb ? (emb.preco / emb.unidades) * item.qtd : 0;
+  const linhas = document.querySelectorAll('#receita-embalagens .receita-item:not(.header-row)');
+  if (linhas[idx]) linhas[idx].querySelector('.custo-cell').textContent = brlPrec(custo);
+  recalcularReceita();
+}
+
+function renderEmbalagensReceita() {
+  const div = document.getElementById('receita-embalagens');
+  if (receitaAtual.embalagensUsadas.length === 0) {
+    div.innerHTML = `<div style="padding: var(--s-3); text-align: center; color: var(--ink-3); font-style: italic; font-size: 0.9rem">Toque em "Adicionar embalagem" abaixo</div>`;
+    return;
+  }
+  let html = `<div class="receita-item header-row">
+    <div class="col-label">Embalagem</div>
+    <div class="col-label center">Qtd (un)</div>
+    <div></div>
+    <div class="col-label right">Custo</div>
+  </div>`;
+  receitaAtual.embalagensUsadas.forEach((item, idx) => {
+    const emb = embalagens.find(e => e.id === item.embId);
+    const custo = emb ? (emb.preco / emb.unidades) * item.qtd : 0;
+    let opts = '';
+    embalagens.forEach(e => {
+      opts += `<option value="${e.id}" ${e.id === item.embId ? 'selected' : ''}>${esc(e.nome)}</option>`;
+    });
+    html += `<div class="receita-item">
+      <select onchange="atualizarEmb(${idx}, 'embId', this.value)">${opts}</select>
+      <div class="input-wrap has-suffix">
+        <input type="number" min="0" step="any" value="${item.qtd}" placeholder="0" oninput="atualizarEmb(${idx}, 'qtd', this.value)">
+        <span class="input-suffix">un</span>
+      </div>
+      <button class="btn-icon" onclick="removerLinhaEmbalagem(${idx})" aria-label="Remover">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+      <div class="custo-cell">${brlPrec(custo)}</div>
+    </div>`;
+  });
+  div.innerHTML = html;
+}
+
+// ==================== CÁLCULO ====================
+function calcCustoIng(r) {
+  let t = 0;
+  r.itens.forEach(it => {
+    const ing = ingredientes.find(i => i.id === it.ingId);
+    if (ing) t += (it.qtd / ing.peso) * ing.preco;
+  });
+  return t;
+}
+function calcCustoEmb(r) {
+  let t = 0;
+  if (!r.embalagensUsadas) return 0;
+  r.embalagensUsadas.forEach(it => {
+    const emb = embalagens.find(e => e.id === it.embId);
+    if (emb) t += (emb.preco / emb.unidades) * it.qtd;
+  });
+  return t;
+}
+
+function calcularReceita(r) {
+  const custoIng = calcCustoIng(r);
+  const custoEmb = calcCustoEmb(r);
+  const custoTotal = custoIng + custoEmb;
+
+  const precoBalcao = custoTotal * (1 + r.metaLucro / 100);
+  const lucroBalcao = precoBalcao - custoTotal;
+  const margemBalcao = custoTotal > 0 ? (lucroBalcao / custoTotal) * 100 : 0;
+
+  const p = config.ifoodPct / 100;
+  let precoIfood = 0, recebeIfood = 0, taxaIfood = 0, lucroIfood = 0;
+  if (p < 1) {
+    precoIfood = (custoTotal + lucroBalcao + config.ifoodFixa) / (1 - p);
+    taxaIfood = precoIfood * p + config.ifoodFixa;
+    recebeIfood = precoIfood - taxaIfood;
+    lucroIfood = recebeIfood - custoTotal;
+  }
+  return { custoIng, custoEmb, custoTotal, precoBalcao, lucroBalcao, margemBalcao, precoIfood, recebeIfood, taxaIfood, lucroIfood };
+}
+
+function recalcularReceita() {
+  receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
+  receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
+
+  const c = calcularReceita(receitaAtual);
+
+  document.getElementById('resumo-custo-ing').textContent = brl(c.custoIng);
+  document.getElementById('resumo-custo-emb').textContent = brl(c.custoEmb);
+  document.getElementById('resumo-custo-total').textContent = brl(c.custoTotal);
+
+  document.getElementById('preco-balcao-num').textContent = brlNum(c.precoBalcao);
+  document.getElementById('preco-balcao-custo').textContent = brl(c.custoTotal);
+  document.getElementById('preco-balcao-margem').textContent = pct(c.margemBalcao);
+  const blu = document.getElementById('preco-balcao-lucro');
+  blu.textContent = brl(c.lucroBalcao);
+  blu.className = 'v ' + (c.lucroBalcao >= 0 ? 'positivo' : 'negativo');
+
+  document.getElementById('preco-ifood-num').textContent = brlNum(c.precoIfood);
+  document.getElementById('preco-ifood-recebe').textContent = brl(c.recebeIfood);
+  document.getElementById('preco-ifood-taxa').textContent = brl(c.taxaIfood);
+  const ilu = document.getElementById('preco-ifood-lucro');
+  ilu.textContent = brl(c.lucroIfood);
+  ilu.className = 'v ' + (c.lucroIfood >= 0 ? 'positivo' : 'negativo');
+}
+
+function salvarReceita() {
+  const nome = document.getElementById('receita-nome').value.trim();
+  if (!nome) return toast('Informe o nome do caldo', 'erro');
+  if (receitaAtual.itens.length === 0) return toast('Adicione ao menos 1 ingrediente', 'erro');
+
+  receitaAtual.nome = nome;
+  receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
+  receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
+
+  if (receitaAtual.id === null) {
+    receitaAtual.id = novoId(receitas);
+    receitas.push(JSON.parse(JSON.stringify(receitaAtual)));
+    toast(nome + ' criado', 'sucesso');
+  } else {
+    const idx = receitas.findIndex(r => r.id === receitaAtual.id);
+    if (idx >= 0) receitas[idx] = JSON.parse(JSON.stringify(receitaAtual));
+    toast(nome + ' atualizado', 'sucesso');
+  }
+  salvarDados();
+  renderReceitas();
+  document.getElementById('receita-titulo').textContent = nome;
+  document.getElementById('btn-excluir').style.display = '';
+}
+
+function excluirReceita() {
+  if (receitaAtual.id === null) return;
+  const nome = receitaAtual.nome;
+  confirmar('Excluir receita?', `"${nome}" será removida permanentemente.`, () => {
+    receitas = receitas.filter(r => r.id !== receitaAtual.id);
+    salvarDados();
+    novaReceita();
+    toast(nome + ' excluído');
+  }, 'Excluir', 'perigo');
+}
+
+function renderReceitas() {
+  const div = document.getElementById('receitas-lista');
+  if (receitas.length === 0) {
+    div.innerHTML = emptyState('Nenhuma receita ainda', 'Clique em "Criar Nova Receita" abaixo.');
+    return;
+  }
+  let html = '<div class="receitas-grid">';
+  receitas.forEach(r => {
+    const c = calcularReceita(r);
+    const ativa = receitaAtual.id === r.id ? 'editing' : '';
+    const preco = r.vendeIfood ? c.precoIfood : c.precoBalcao;
+    const canal = r.vendeIfood ? 'iFood' : 'Balcão';
+    const canalClass = r.vendeIfood ? 'ifood-ativo' : '';
+    html += `<div class="receita-card ${ativa}" onclick="carregarReceita(${r.id})">
+      <div>
+        <div class="receita-nome">${esc(r.nome)}</div>
+        <div class="receita-meta">Custo ${brl(c.custoTotal)} · Meta ${r.metaLucro}%</div>
+      </div>
+      <div class="receita-preco-bloco">
+        <div class="receita-preco">${brl(preco)}</div>
+        <div class="receita-canal ${canalClass}">${canal}</div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+// ==================== PAINEL ====================
+function renderPainel() {
+  const stats = document.getElementById('painel-stats');
+  const lista = document.getElementById('painel-receitas');
+  if (receitas.length === 0) {
+    stats.innerHTML = '';
+    lista.innerHTML = emptyState('Sem dados ainda', 'Crie uma receita pra começar.');
+    return;
+  }
+  let totalCusto = 0, totalLucroBalcao = 0, qtdIfood = 0;
+  const dados = receitas.map(r => {
+    const c = calcularReceita(r);
+    totalCusto += c.custoTotal;
+    totalLucroBalcao += c.lucroBalcao;
+    if (r.vendeIfood) qtdIfood++;
+    return { ...r, ...c };
+  });
+  const margemMedia = totalCusto > 0 ? (totalLucroBalcao / totalCusto) * 100 : 0;
+
+  stats.innerHTML = `
+    <div class="stat"><div class="stat-label">Receitas</div><div class="stat-valor">${receitas.length}</div></div>
+    <div class="stat"><div class="stat-label">Custo médio</div><div class="stat-valor">${brl(totalCusto / receitas.length)}</div></div>
+    <div class="stat"><div class="stat-label">Margem média</div><div class="stat-valor">${pct(margemMedia)}</div></div>
+    <div class="stat"><div class="stat-label">No iFood</div><div class="stat-valor">${qtdIfood}<span style="font-size:0.55em;color:var(--ink-3);font-weight:500;letter-spacing:0"> / ${receitas.length}</span></div></div>
+  `;
+
+  let html = '';
+  dados.forEach(r => {
+    const clB = r.lucroBalcao >= 0 ? 'positivo' : 'negativo';
+    html += `<div class="painel-receita">
+      <div class="pr-nome">${esc(r.nome)}</div>
+      <div class="pr-linha"><span class="l">Custo total</span><span class="v">${brl(r.custoTotal)}</span></div>
+      <div class="pr-linha"><span class="l">Preço balcão</span><span class="v">${brl(r.precoBalcao)} <span class="${clB}">(${brl(r.lucroBalcao)})</span></span></div>
+      ${r.vendeIfood
+        ? `<div class="pr-linha"><span class="l">Preço iFood</span><span class="v">${brl(r.precoIfood)} <span class="${r.lucroIfood >= 0 ? 'positivo' : 'negativo'}">(${brl(r.lucroIfood)} líq.)</span></span></div>`
+        : `<div class="pr-linha"><span class="l">iFood</span><span class="v" style="color:var(--ink-3);font-weight:400;font-style:italic">não vende</span></div>`
+      }
+    </div>`;
+  });
+  lista.innerHTML = html;
+}
+
+// ==================== EMPTY STATE ====================
+function emptyState(titulo, dica) {
+  return `<div class="empty">
+    <div class="ico-empty"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M9 15c1 1 2 1 3 1s2 0 3-1" stroke-linecap="round"/></svg></div>
+    <div class="empty-titulo">${titulo}</div>
+    <div class="empty-dica">${dica}</div>
+  </div>`;
+}
+
+// ==================== EXPORT / IMPORT ====================
+function exportarDados() {
+  const dados = { ingredientes, embalagens, receitas, config, exportadoEm: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `delicaldos-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup baixado', 'sucesso');
+}
+function importarDados(evt) {
+  const arq = evt.target.files[0];
+  if (!arq) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (!d.ingredientes || !d.embalagens || !d.receitas) throw 0;
+      confirmar('Importar backup?', 'Seus dados atuais serão substituídos.', () => {
+        ingredientes = d.ingredientes;
+        embalagens = d.embalagens;
+        receitas = d.receitas;
+        config = d.config || { ifoodPct: 23, ifoodFixa: 0 };
+        salvarDados();
+        renderTudo();
+        toast('Importado com sucesso', 'sucesso');
+      }, 'Importar');
+    } catch {
+      toast('Arquivo inválido', 'erro');
+    }
+  };
+  reader.readAsText(arq);
+  evt.target.value = '';
+}
+function resetarDados() {
+  confirmar('Restaurar padrão?', 'Todos os seus dados serão apagados e voltarão ao original.', () => {
+    ['ingredientes', 'embalagens', 'receitas', 'config'].forEach(k =>
+      localStorage.removeItem('delicaldos_' + k)
+    );
+    carregarDados();
+    renderTudo();
+    toast('Dados restaurados');
+  }, 'Restaurar', 'perigo');
+}
+
+// ==================== RENDER TUDO ====================
+function renderTudo() {
+  renderConfig();
+  renderIngredientes();
+  renderEmbalagens();
+  novaReceita({ scroll: false });
+  setupReveal();
+}
+
+// ==================== TUTORIAL BANNER ====================
+function fecharTutorial() {
+  const banner = document.getElementById('tutorial-banner');
+  if (banner) banner.classList.add('hidden');
+  localStorage.setItem('delicaldos_tutorial_visto', '1');
+}
+
+function inicializarTutorial() {
+  const visto = localStorage.getItem('delicaldos_tutorial_visto');
+  const banner = document.getElementById('tutorial-banner');
+  if (!banner) return;
+
+  const temExemplos =
+    ingredientes.some(i => /\(exemplo\)/i.test(i.nome)) ||
+    embalagens.some(e => /\(exemplo\)/i.test(e.nome)) ||
+    receitas.some(r => /\(exemplo\)/i.test(r.nome));
+
+  if (visto === '1' || !temExemplos) {
+    banner.classList.add('hidden');
+  }
+}
+
+// ==================== INIT ====================
+carregarDados();
+renderTudo();
+inicializarTutorial();
+</script>
+
+</body>
+</html>
