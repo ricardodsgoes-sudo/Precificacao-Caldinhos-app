@@ -1730,7 +1730,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
             <span class="input-prefix">R$</span>
             <input type="number" id="ing-preco" placeholder="0,00" min="0" step="any" oninput="previewIng()">
           </div>
-          <span class="hint">O preço do pacote inteiro, não por kg.</span>
+          <span class="hint" id="ing-preco-hint">O preço do pacote inteiro, não por kg.</span>
         </div>
       </div>
 
@@ -2072,10 +2072,13 @@ function setIngTipo(tipo) {
   const u = UNIDADES[tipo];
   document.getElementById('ing-peso-unit-a').textContent = u.grande;
   document.getElementById('ing-peso-unit-b').textContent = u.pequena;
-  document.getElementById('ing-peso-label').textContent = tipo === 'solido' ? 'Peso do pacote' : 'Volume do pacote';
+  document.getElementById('ing-peso-label').textContent = tipo === 'solido' ? 'Peso do pacote' : 'Volume da embalagem';
   document.getElementById('ing-peso-hint').textContent = tipo === 'solido'
     ? 'Quanto pesa o pacote inteiro que você compra.'
-    : 'Quanto vem no pacote/garrafa que você compra.';
+    : 'Quanto vem na garrafa, lata ou vidro que você compra.';
+  document.getElementById('ing-preco-hint').textContent = tipo === 'solido'
+    ? 'O preço do pacote inteiro, não por kg.'
+    : 'O preço da embalagem inteira, não por litro.';
 
   ingUnit = 'a'; // sempre volta pra unidade grande quando troca o tipo
   setIngPesoUnit('a');
