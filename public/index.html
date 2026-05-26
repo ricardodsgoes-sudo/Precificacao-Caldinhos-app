@@ -7,6 +7,11 @@
 <meta name="description" content="Calculadora de precificação para a Delicaldos — caldos artesanais. Calcule custo de ingredientes, embalagens e preço de venda com taxa do iFood.">
 <link rel="icon" type="image/jpeg" href="delicaldos-logo.jpg">
 <link rel="apple-touch-icon" href="delicaldos-logo.jpg">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Delicaldos">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Delicaldos — Precificação</title>
 
 <style>
@@ -492,6 +497,19 @@ main {
   font-variant-numeric: tabular-nums;
 }
 .form-group .preview.show { display: block; animation: fade-in 0.3s var(--ease-out); }
+.form-group .preview.com-aviso {
+  background: var(--aviso-bg);
+  border: 1px solid oklch(0.78 0.10 80);
+  color: var(--ink);
+}
+.form-group .preview .aviso-sanidade {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: oklch(0.40 0.13 50);
+  line-height: 1.4;
+  font-weight: 500;
+}
 @keyframes fade-in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
 
 input[type="text"], input[type="number"], select {
@@ -781,7 +799,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
 .receita-item {
   display: grid;
-  grid-template-columns: 1fr 90px auto;
+  grid-template-columns: 1fr 150px auto;
   gap: var(--s-2);
   align-items: center;
   padding: var(--s-3) 4px;
@@ -823,6 +841,26 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   font-size: 0.82rem;
   font-weight: 600;
   right: 10px;
+}
+
+/* Wrapper flex para input + pills de unidade na receita */
+.receita-qty-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.receita-qty-group input {
+  flex: 1;
+  min-width: 0;
+}
+.receita-qty-group .receita-unit-pills {
+  display: flex;
+  gap: 2px;
+  background: var(--paper-2);
+  border-radius: var(--r-sm);
+  padding: 3px;
+  border: 1px solid var(--paper-3);
+  flex-shrink: 0;
 }
 
 .receita-item .custo-cell {
@@ -1175,6 +1213,33 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 .receita-card.editing {
   border-color: var(--coral);
   background: var(--coral-tint);
+}
+.receita-card-acoes {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+  opacity: 0.55;
+  transition: opacity 0.2s var(--ease-out);
+}
+.receita-card { position: relative; }
+.receita-card:hover .receita-card-acoes { opacity: 1; }
+.receita-card-acoes button {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: auto;
+}
+.receita-card-acoes button:hover {
+  color: var(--bordo);
+  background: var(--paper-2);
 }
 
 .receita-card .receita-nome {
@@ -1582,7 +1647,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   .toggle-ifood { min-width: 240px; }
 
   .receita-item {
-    grid-template-columns: 2fr 100px 110px auto;
+    grid-template-columns: 2fr 150px 110px auto;
   }
   .receita-item .custo-cell {
     grid-column: 3;
@@ -1625,6 +1690,348 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
   outline-offset: 3px;
   border-radius: var(--r-sm);
 }
+
+/* ==========================================================================
+   TOAST COM AÇÃO (UNDO)
+   ========================================================================== */
+.toast .toast-acao {
+  background: transparent;
+  border: none;
+  color: var(--paper);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-size: 0.92rem;
+  padding: 4px 6px;
+  margin-left: auto;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  border-radius: 4px;
+  min-height: auto;
+  flex-shrink: 0;
+}
+.toast .toast-acao:hover { opacity: 0.85; }
+.toast-msg { flex: 1; min-width: 0; }
+
+/* ==========================================================================
+   BANNER DE LEMBRETE DE BACKUP
+   ========================================================================== */
+.backup-aviso {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s-3);
+  align-items: center;
+  padding: var(--s-4);
+  margin-bottom: var(--s-4);
+  background: var(--aviso-bg);
+  border: 1px solid oklch(0.78 0.10 80);
+  border-radius: var(--r-md);
+  animation: tab-in 0.5s var(--ease-out);
+}
+.backup-aviso.hidden { display: none; }
+.backup-aviso-icon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--aviso);
+  color: var(--paper);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.backup-aviso-text {
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.backup-aviso-text strong { color: var(--ink); display: block; margin-bottom: 2px; }
+.backup-aviso-acoes {
+  display: flex; flex-direction: column; gap: 4px;
+  align-items: flex-end;
+}
+.backup-aviso-btn {
+  background: var(--bordo);
+  color: var(--paper);
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: auto;
+}
+.backup-aviso-fechar {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  text-decoration: underline;
+  min-height: auto;
+}
+@media (max-width: 480px) {
+  .backup-aviso { grid-template-columns: 1fr; }
+  .backup-aviso-icon { display: none; }
+  .backup-aviso-acoes { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+/* ==========================================================================
+   AVISO DE ARMAZENAMENTO (onboarding)
+   ========================================================================== */
+.onboarding-aviso {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  padding: var(--s-3) var(--s-4);
+  margin-top: var(--s-3);
+  background: var(--paper-2);
+  border: 1px dashed var(--paper-4);
+  border-radius: var(--r-md);
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.onboarding-aviso svg { color: var(--bordo-soft); flex-shrink: 0; margin-top: 2px; }
+.onboarding-aviso strong { color: var(--ink); }
+.onboarding-aviso a {
+  color: var(--bordo);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   BOTÃO INSTALAR APP (PWA)
+   ========================================================================== */
+.install-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: var(--bordo);
+  color: var(--paper);
+  border: none;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: var(--s-2);
+  min-height: auto;
+}
+.install-btn.show { display: inline-flex; }
+.install-btn svg { width: 14px; height: 14px; }
+
+/* ==========================================================================
+   MEMÓRIA DE CÁLCULO (transparência iFood)
+   ========================================================================== */
+.calc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--bordo);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: var(--s-2);
+  min-height: auto;
+}
+.calc-toggle:hover { color: var(--coral); }
+.calc-toggle svg { transition: transform 0.25s var(--ease-out); }
+.calc-toggle.aberto svg { transform: rotate(180deg); }
+
+.calc-memoria {
+  display: none;
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: oklch(0.97 0.018 60);
+  border-radius: var(--r-sm);
+  border-left: none;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: var(--ink-2);
+  line-height: 1.7;
+  overflow-x: auto;
+}
+.calc-memoria.aberto { display: block; animation: tab-in 0.3s var(--ease-out); }
+.calc-memoria .calc-passo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-3);
+  padding: 3px 0;
+}
+.calc-memoria .calc-passo .formula { color: var(--ink-3); flex: 1; min-width: 0; }
+.calc-memoria .calc-passo .resultado { color: var(--ink); font-weight: 700; white-space: nowrap; }
+.calc-memoria .calc-divisor {
+  height: 1px;
+  background: var(--paper-3);
+  margin: 6px 0;
+}
+.calc-memoria .calc-final {
+  color: var(--bordo);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding-top: 4px;
+}
+.calc-memoria .calc-nota {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   DICA CONTEXTUAL POR ABA
+   ========================================================================== */
+.dica-aba {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s-3);
+  align-items: start;
+  padding: var(--s-3) var(--s-4);
+  margin-bottom: var(--s-4);
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  font-size: 0.88rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+  animation: tab-in 0.4s var(--ease-out);
+}
+.dica-aba.hidden { display: none; }
+.dica-aba-icone {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--coral-tint);
+  color: var(--bordo);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.dica-aba-texto strong { color: var(--ink); }
+.dica-aba-fechar {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  min-height: auto;
+  align-self: start;
+}
+.dica-aba-fechar:hover { background: var(--paper-3); color: var(--ink); }
+
+/* ==========================================================================
+   BUSCA
+   ========================================================================== */
+.busca-wrap {
+  position: relative;
+  margin-bottom: var(--s-3);
+}
+.busca-wrap input {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--ink);
+  transition: border-color 0.2s var(--ease-out);
+  -webkit-appearance: none;
+}
+.busca-wrap input:focus {
+  border-color: var(--coral);
+  outline: none;
+}
+.busca-wrap input::placeholder { color: var(--ink-4); }
+.busca-icone {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.busca-limpar {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: none;
+  min-height: auto;
+}
+.busca-limpar.show { display: inline-flex; align-items: center; justify-content: center; }
+.busca-vazia {
+  text-align: center;
+  padding: var(--s-4);
+  color: var(--ink-3);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   TOOLTIP (botão de ajuda inline)
+   ========================================================================== */
+.tip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--paper-3);
+  color: var(--ink-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 0;
+  vertical-align: middle;
+  min-height: auto;
+  line-height: 1;
+}
+.tip-btn:hover { background: var(--coral); color: var(--paper); }
+.tip-btn svg { width: 11px; height: 11px; }
+
+/* ==========================================================================
+   BOTÃO ICONE EXTRA (duplicar)
+   ========================================================================== */
+.cadastro-item .acoes-item {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.btn-icon-fantasma {
+  background: transparent;
+  border: none;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: auto;
+  transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+.btn-icon-fantasma:hover { color: var(--bordo); background: var(--paper-2); }
 </style>
 </head>
 <body>
@@ -1640,6 +2047,10 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="tagline">precificação artesanal</div>
     </div>
     <div class="save-pill" id="save-indicator">Salvo</div>
+    <button class="install-btn" id="install-btn" onclick="instalarApp()" aria-label="Instalar app">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      Instalar
+    </button>
   </div>
 </header>
 
@@ -1676,6 +2087,21 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
 <main>
 
+  <!-- ===================== LEMBRETE DE BACKUP ===================== -->
+  <div class="backup-aviso hidden" id="backup-aviso" role="alert">
+    <div class="backup-aviso-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    </div>
+    <div class="backup-aviso-text">
+      <strong id="backup-aviso-titulo">Faça um backup das suas receitas</strong>
+      <span id="backup-aviso-desc">Você já tem dados cadastrados. Baixe um arquivo de backup pra não perder se algo acontecer com o celular.</span>
+    </div>
+    <div class="backup-aviso-acoes">
+      <button class="backup-aviso-btn" onclick="exportarDadosDoAviso()">Exportar agora</button>
+      <button class="backup-aviso-fechar" onclick="adiarBackup()">Lembrar depois</button>
+    </div>
+  </div>
+
   <!-- ===================== ABA RECEITAS ===================== -->
   <section class="tab-content" id="tab-receitas">
     <div class="aba-header">
@@ -1691,6 +2117,10 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="tutorial-text">
         <strong>Boas-vindas!</strong>
         Comece cadastrando seus <strong>Ingredientes</strong> (na aba acima) e suas <strong>Embalagens</strong>. Depois crie a sua primeira <strong>Receita</strong> aqui.
+        <div class="onboarding-aviso" style="margin-top: var(--s-3)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span><strong>Seus dados ficam só neste celular.</strong> Limpar o navegador, trocar de aparelho ou desinstalar o app apaga tudo. <a onclick="irPara('config')">Fazer backup agora →</a></span>
+        </div>
       </div>
       <button class="tutorial-close" onclick="fecharTutorial()" aria-label="Fechar dica">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
@@ -1698,8 +2128,17 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
     </div>
 
     <div class="card reveal">
+      <div class="busca-wrap" id="busca-wrap-receitas" style="display:none">
+        <span class="busca-icone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+        <input type="text" id="busca-receitas" placeholder="Buscar receita..." oninput="filtrarLista('receitas')" aria-label="Buscar receitas">
+        <button type="button" class="busca-limpar" id="busca-limpar-receitas" onclick="limparBusca('receitas')" aria-label="Limpar busca">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+      </div>
       <div id="receitas-lista"></div>
-      <button class="btn-coral btn-full" style="margin-top: var(--s-4)" onclick="novaReceita()">
+      <button class="btn-coral btn-full" style="margin-top: var(--s-4)" onclick="novaReceita({fromClick:true})">
         + Criar Nova Receita
       </button>
     </div>
@@ -1726,7 +2165,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="form-group" style="margin-top: var(--s-6)">
         <label>Rendimento <span class="unit-badge">quantos potes</span></label>
         <div class="input-wrap has-suffix">
-          <input type="number" id="receita-rendimento" value="1" min="1" step="1" oninput="recalcularReceita()">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="receita-rendimento" value="1" oninput="recalcularReceita()">
           <span class="input-suffix">potes</span>
         </div>
         <span class="hint">Quantos potes/porções saem dessa panela. Se você não divide em potes, deixe 1.</span>
@@ -1741,9 +2180,9 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
       <div class="config-bar">
         <div class="meta-grupo">
-          <label>Meta de lucro</label>
+          <label>Meta de lucro <button type="button" class="tip-btn" onclick="mostrarTip('margem')" aria-label="O que é meta de lucro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 17h.01"/><path d="M12 13c0-2 2-3 2-5a2 2 0 10-4 0"/></svg></button></label>
           <div class="input-wrap has-suffix">
-            <input type="number" id="meta-lucro" value="60" min="0" step="any" oninput="recalcularReceita()">
+            <input type="text" inputmode="decimal" id="meta-lucro" value="60" oninput="recalcularReceita()">
             <span class="input-suffix">%</span>
           </div>
         </div>
@@ -1783,6 +2222,11 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
             <span class="label">Você lucra por pote</span>
             <span class="v positivo" id="preco-balcao-lucro">R$ 0,00</span>
           </div>
+          <button class="calc-toggle" type="button" id="calc-toggle-balcao" onclick="alternarMemoriaCalculo('balcao')" aria-expanded="false">
+            Como esse preço foi calculado?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="calc-memoria" id="calc-memoria-balcao" aria-hidden="true"></div>
         </div>
         <div class="preco-card ifood">
           <span class="canal-tag">iFood</span>
@@ -1794,6 +2238,11 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
             <span class="label">Lucro líquido por pote</span>
             <span class="v positivo" id="preco-ifood-lucro">R$ 0,00</span>
           </div>
+          <button class="calc-toggle" type="button" id="calc-toggle-ifood" onclick="alternarMemoriaCalculo('ifood')" aria-expanded="false">
+            Como esse preço foi calculado?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="calc-memoria" id="calc-memoria-ifood" aria-hidden="true"></div>
         </div>
       </div>
 
@@ -1811,6 +2260,18 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="eyebrow">Despensa</div>
       <h2 class="display">Ingredientes</h2>
       <p class="lead">Cadastre o que você compra. O custo por grama sai sozinho.</p>
+    </div>
+
+    <div class="dica-aba" id="dica-ingredientes">
+      <div class="dica-aba-icone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </div>
+      <div class="dica-aba-texto">
+        <strong>O que cadastrar aqui:</strong> tudo que entra na panela — proteína, legumes, temperos, óleos, vinagres. Cadastre o pacote inteiro (peso e preço que você pagou). O sistema calcula sozinho o custo por grama.
+      </div>
+      <button class="dica-aba-fechar" onclick="fecharDicaAba('ingredientes')" aria-label="Fechar dica">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
     </div>
 
     <div class="card reveal">
@@ -1840,7 +2301,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         <div class="form-group">
           <label id="ing-peso-label">Peso do pacote</label>
           <div class="input-wrap has-suffix-pills">
-            <input type="number" id="ing-peso" placeholder="1,5" min="0" step="any" oninput="previewIng()">
+            <input type="text" inputmode="decimal" id="ing-peso" placeholder="1,5" oninput="previewIng()">
             <div class="unit-pills" role="group" aria-label="Unidade">
               <button type="button" class="unit-pill active" id="ing-peso-unit-a" onclick="setIngPesoUnit('a')">kg</button>
               <button type="button" class="unit-pill" id="ing-peso-unit-b" onclick="setIngPesoUnit('b')">g</button>
@@ -1853,7 +2314,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
           <label>Quanto você pagou</label>
           <div class="input-wrap has-prefix">
             <span class="input-prefix">R$</span>
-            <input type="number" id="ing-preco" placeholder="0,00" min="0" step="any" oninput="previewIng()">
+            <input type="text" inputmode="decimal" id="ing-preco" placeholder="0,00" oninput="previewIng()">
           </div>
           <span class="hint" id="ing-preco-hint">O preço do pacote inteiro, não por kg.</span>
         </div>
@@ -1870,6 +2331,15 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
     <div class="card reveal">
       <h2>Cadastrados</h2>
+      <div class="busca-wrap" id="busca-wrap-ingredientes" style="display:none">
+        <span class="busca-icone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+        <input type="text" id="busca-ingredientes" placeholder="Buscar ingrediente..." oninput="filtrarLista('ingredientes')" aria-label="Buscar ingredientes">
+        <button type="button" class="busca-limpar" id="busca-limpar-ingredientes" onclick="limparBusca('ingredientes')" aria-label="Limpar busca">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+      </div>
       <div id="ingredientes-lista"></div>
     </div>
 
@@ -1884,6 +2354,18 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <p class="lead">Potes, tampas, sacolas, talheres — tudo que vai junto com o caldo.</p>
     </div>
 
+    <div class="dica-aba" id="dica-embalagens">
+      <div class="dica-aba-icone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </div>
+      <div class="dica-aba-texto">
+        <strong>O que cadastrar aqui:</strong> tudo que vai <em>junto</em> com o caldo — potes, tampas, sacolas, colheres, guardanapos, etiquetas. Cadastre o fardo inteiro (quantas unidades vêm e quanto custou) — o custo por unidade sai automático.
+      </div>
+      <button class="dica-aba-fechar" onclick="fecharDicaAba('embalagens')" aria-label="Fechar dica">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+
     <div class="card reveal">
       <h2>Nova embalagem</h2>
 
@@ -1896,7 +2378,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="form-grid-2">
         <div class="form-group">
           <label>Unidades no pacote <span class="unit-badge">qtd</span></label>
-          <input type="number" id="emb-unid" placeholder="50" min="1" step="1" oninput="previewEmb()">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="emb-unid" placeholder="50" oninput="previewEmb()">
           <span class="hint">Quantos vêm no fardo/pacote.</span>
         </div>
 
@@ -1904,7 +2386,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
           <label>Quanto você pagou</label>
           <div class="input-wrap has-prefix">
             <span class="input-prefix">R$</span>
-            <input type="number" id="emb-preco" placeholder="0,00" min="0" step="any" oninput="previewEmb()">
+            <input type="text" inputmode="decimal" id="emb-preco" placeholder="0,00" oninput="previewEmb()">
           </div>
           <span class="hint">O preço do pacote inteiro.</span>
         </div>
@@ -1921,6 +2403,15 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
 
     <div class="card reveal">
       <h2>Cadastradas</h2>
+      <div class="busca-wrap" id="busca-wrap-embalagens" style="display:none">
+        <span class="busca-icone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+        <input type="text" id="busca-embalagens" placeholder="Buscar embalagem..." oninput="filtrarLista('embalagens')" aria-label="Buscar embalagens">
+        <button type="button" class="busca-limpar" id="busca-limpar-embalagens" onclick="limparBusca('embalagens')" aria-label="Limpar busca">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+        </button>
+      </div>
       <div id="embalagens-lista"></div>
     </div>
 
@@ -1935,15 +2426,27 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <p class="lead">Configure as taxas que o iFood cobra e gerencie seus dados.</p>
     </div>
 
+    <div class="dica-aba" id="dica-config">
+      <div class="dica-aba-icone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </div>
+      <div class="dica-aba-texto">
+        <strong>Configure aqui:</strong> a comissão que o iFood cobra de você (assim o app calcula o preço certo pra plataforma) e faça backup dos seus dados periodicamente.
+      </div>
+      <button class="dica-aba-fechar" onclick="fecharDicaAba('config')" aria-label="Fechar dica">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+
     <div class="card reveal">
       <h2>Taxa do iFood</h2>
       <p class="help-text">Quanto o iFood desconta de cada venda. Com isso o sistema descobre o preço a cobrar no app pra você manter o mesmo lucro do balcão.</p>
 
       <div class="form-grid-2">
         <div class="form-group">
-          <label>Comissão <span class="unit-badge">%</span></label>
+          <label>Comissão <button type="button" class="tip-btn" onclick="mostrarTip('comissao')" aria-label="O que é comissão"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 17h.01"/><path d="M12 13c0-2 2-3 2-5a2 2 0 10-4 0"/></svg></button> <span class="unit-badge">%</span></label>
           <div class="input-wrap has-suffix">
-            <input type="number" id="cfg-ifood-pct" min="0" max="100" step="any" oninput="atualizarConfig()">
+            <input type="text" inputmode="decimal" id="cfg-ifood-pct" oninput="atualizarConfig()">
             <span class="input-suffix">%</span>
           </div>
           <span class="hint">Porcentagem que o iFood tira de cada pedido.</span>
@@ -1953,7 +2456,7 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
           <label>Taxa fixa</label>
           <div class="input-wrap has-prefix">
             <span class="input-prefix">R$</span>
-            <input type="number" id="cfg-ifood-fixa" min="0" step="any" oninput="atualizarConfig()">
+            <input type="text" inputmode="decimal" id="cfg-ifood-fixa" oninput="atualizarConfig()">
           </div>
           <span class="hint">Valor fixo por pedido (geralmente 0).</span>
         </div>
@@ -1991,6 +2494,14 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         <button class="btn-danger" onclick="resetarDados()">Restaurar padrão</button>
       </div>
     </div>
+
+    <div class="card reveal">
+      <h2>Dicas e ajuda</h2>
+      <p class="help-text">Se você fechou os balões de dica em cada aba e quer ver tudo de novo, é só clicar aqui.</p>
+      <div class="acoes-receita">
+        <button class="btn-ghost" onclick="restaurarDicas()">Mostrar dicas novamente</button>
+      </div>
+    </div>
   </section>
 
   <!-- ===================== ABA PAINEL ===================== -->
@@ -1999,6 +2510,18 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
       <div class="eyebrow">Visão Geral</div>
       <h2 class="display">Painel</h2>
       <p class="lead">Resumo de todas as receitas com lucro de cada uma.</p>
+    </div>
+
+    <div class="dica-aba" id="dica-painel">
+      <div class="dica-aba-icone">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+      </div>
+      <div class="dica-aba-texto">
+        <strong>O que você vê aqui:</strong> resumo de todas as receitas — quanto cada uma custa, qual o preço de venda e quanto você lucra. Use pra comparar quais caldos dão mais retorno.
+      </div>
+      <button class="dica-aba-fechar" onclick="fecharDicaAba('painel')" aria-label="Fechar dica">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
     </div>
 
     <div class="painel-stats reveal" id="painel-stats"></div>
@@ -2052,6 +2575,7 @@ function salvarDados() {
   localStorage.setItem('delicaldos_receitas', JSON.stringify(receitas));
   localStorage.setItem('delicaldos_config', JSON.stringify(config));
   flashSaved();
+  if (typeof atualizarAvisoBackup === 'function') atualizarAvisoBackup();
 }
 
 function carregarDados() {
@@ -2074,6 +2598,17 @@ function carregarDados() {
 }
 
 // ==================== UTILS ====================
+// Aceita "1,5", "1.5" ou número — devolve number ou NaN
+function parseNum(v) {
+  if (v === null || v === undefined || v === '') return NaN;
+  const s = String(v).trim().replace(/\s/g, '').replace(',', '.');
+  return parseFloat(s);
+}
+function parseInteiro(v) {
+  const n = parseNum(v);
+  return isNaN(n) ? NaN : Math.trunc(n);
+}
+
 const brl = v => 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ',');
 const brlNum = v => (Number(v) || 0).toFixed(2).replace('.', ',');
 // 2 casas pra valores >= R$ 1 (terceira casa vira ruído).
@@ -2100,16 +2635,39 @@ function flashSaved() {
 }
 
 // ==================== TOAST ====================
-function toast(msg, tipo = '') {
+function toast(msg, tipo = '', opts = {}) {
   const cont = document.getElementById('toast-container');
   const t = document.createElement('div');
   t.className = 'toast ' + tipo;
-  t.textContent = msg;
-  cont.appendChild(t);
-  setTimeout(() => {
+
+  const msgEl = document.createElement('span');
+  msgEl.className = 'toast-msg';
+  msgEl.textContent = msg;
+  t.appendChild(msgEl);
+
+  const duracao = opts.acao ? 6000 : 2400;
+  let removido = false;
+  const fechar = () => {
+    if (removido) return;
+    removido = true;
     t.style.animation = 'toast-out 0.3s var(--ease-out) forwards';
     setTimeout(() => t.remove(), 320);
-  }, 2400);
+  };
+
+  if (opts.acao && typeof opts.onAcao === 'function') {
+    const btn = document.createElement('button');
+    btn.className = 'toast-acao';
+    btn.textContent = opts.acao;
+    btn.onclick = () => {
+      opts.onAcao();
+      fechar();
+    };
+    t.appendChild(btn);
+  }
+
+  cont.appendChild(t);
+  setTimeout(fechar, duracao);
+  return { fechar };
 }
 
 // ==================== MODAL ====================
@@ -2191,8 +2749,8 @@ function setupReveal(scope = document) {
 
 // ==================== CONFIG IFOOD ====================
 function atualizarConfig() {
-  config.ifoodPct = parseFloat(document.getElementById('cfg-ifood-pct').value) || 0;
-  config.ifoodFixa = parseFloat(document.getElementById('cfg-ifood-fixa').value) || 0;
+  config.ifoodPct = parseNum(document.getElementById('cfg-ifood-pct').value) || 0;
+  config.ifoodFixa = parseNum(document.getElementById('cfg-ifood-fixa').value) || 0;
   salvarDados();
   recalcularReceita();
 }
@@ -2205,7 +2763,7 @@ function renderConfig() {
 // 'solido' usa kg/g (base = g). 'liquido' usa L/ml (base = ml).
 // O campo `peso` no ingrediente sempre guarda no base (g ou ml).
 let ingTipo = 'solido';
-let ingUnit = 'kg'; // 'kg' ou 'g' pra solido; 'L' ou 'ml' pra liquido
+let ingUnit = 'a'; // 'a' = unidade grande (kg/L); 'b' = unidade pequena (g/ml)
 
 const UNIDADES = {
   solido:  { grande: 'kg', pequena: 'g',  fatorGrande: 1000, base: 'g'  },
@@ -2246,7 +2804,7 @@ function setIngPesoUnit(slot) {
 }
 
 function getIngPesoBase() {
-  const v = parseFloat(document.getElementById('ing-peso').value);
+  const v = parseNum(document.getElementById('ing-peso').value);
   if (!v || v <= 0) return 0;
   return ingUnit === 'a' ? v * UNIDADES[ingTipo].fatorGrande : v;
 }
@@ -2256,15 +2814,36 @@ function getIngPesoGramas() { return getIngPesoBase(); } // compat
 // ==================== PREVIEW (campos autoexplicativos) ====================
 function previewIng() {
   const peso = getIngPesoBase();
-  const preco = parseFloat(document.getElementById('ing-preco').value);
+  const preco = parseNum(document.getElementById('ing-preco').value);
   const p = document.getElementById('ing-preview');
   if (peso > 0 && preco > 0) {
     const por100 = (preco / peso) * 100;
     const u = UNIDADES[ingTipo].base;
-    p.innerHTML = `Vai custar <strong>${brlPrec(por100)}</strong> a cada 100&thinsp;${u} de ${escNomeIng()}.`;
+    let html = `Vai custar <strong>${brlPrec(por100)}</strong> a cada 100&thinsp;${u} de ${escNomeIng()}.`;
+
+    // Aviso de sanidade: pacote enorme demais provavelmente é erro de unidade
+    const valorBruto = parseNum(document.getElementById('ing-peso').value);
+    const limiteGrande = 50;       // 50 kg / 50 L = muito grande pra cozinha artesanal
+    const limitePequena = 50000;   // 50.000 g / 50.000 ml também
+    let avisoUnidade = '';
+    if (ingUnit === 'a' && valorBruto > limiteGrande) {
+      const sugestao = ingTipo === 'solido' ? 'g (gramas)' : 'ml (mililitros)';
+      avisoUnidade = `<br><span class="aviso-sanidade">⚠️ ${valorBruto} ${UNIDADES[ingTipo].grande} parece muito. Você quis dizer ${valorBruto} ${UNIDADES[ingTipo].pequena}? Troque a unidade pra <strong>${sugestao}</strong>.</span>`;
+    } else if (ingUnit === 'b' && valorBruto > limitePequena) {
+      avisoUnidade = `<br><span class="aviso-sanidade">⚠️ ${valorBruto} ${UNIDADES[ingTipo].pequena} parece muito. Troque pra <strong>${UNIDADES[ingTipo].grande}</strong>.</span>`;
+    }
+
+    // Aviso: custo/100g muito alto pode indicar erro de preço ou peso
+    if (por100 > 200) {
+      avisoUnidade += `<br><span class="aviso-sanidade">⚠️ Custo de ${brl(por100)} a cada 100${u} parece muito alto — confira o preço e a quantidade.</span>`;
+    }
+
+    p.innerHTML = html + avisoUnidade;
+    p.classList.toggle('com-aviso', !!avisoUnidade);
     p.classList.add('show');
   } else {
     p.classList.remove('show');
+    p.classList.remove('com-aviso');
   }
 }
 function escNomeIng() {
@@ -2273,15 +2852,22 @@ function escNomeIng() {
 }
 
 function previewEmb() {
-  const u = parseFloat(document.getElementById('emb-unid').value);
-  const p = parseFloat(document.getElementById('emb-preco').value);
+  const u = parseNum(document.getElementById('emb-unid').value);
+  const p = parseNum(document.getElementById('emb-preco').value);
   const el = document.getElementById('emb-preview');
   if (u > 0 && p > 0) {
     const cu = p / u;
-    el.innerHTML = `Cada unidade vai sair por <strong>${brlPrec(cu)}</strong>.`;
+    let html = `Cada unidade vai sair por <strong>${brlPrec(cu)}</strong>.`;
+    let aviso = '';
+    if (cu > 50) {
+      aviso = `<br><span class="aviso-sanidade">⚠️ ${brl(cu)} por unidade parece alto — confira se acertou o preço e a quantidade.</span>`;
+    }
+    el.innerHTML = html + aviso;
+    el.classList.toggle('com-aviso', !!aviso);
     el.classList.add('show');
   } else {
     el.classList.remove('show');
+    el.classList.remove('com-aviso');
   }
 }
 
@@ -2289,13 +2875,13 @@ function previewEmb() {
 function adicionarIngrediente() {
   const nome = document.getElementById('ing-nome').value.trim();
   const peso = getIngPesoBase();
-  const preco = parseFloat(document.getElementById('ing-preco').value);
+  const preco = parseNum(document.getElementById('ing-preco').value);
 
   if (!nome) return toast('Informe o nome', 'erro');
   if (!peso || peso <= 0) {
     return toast(ingTipo === 'solido' ? 'Informe o peso do pacote' : 'Informe o volume do pacote', 'erro');
   }
-  if (isNaN(preco) || preco < 0) return toast('Informe o valor pago', 'erro');
+  if (isNaN(preco) || preco <= 0) return toast('O valor pago precisa ser maior que zero', 'erro');
 
   ingredientes.push({ id: novoId(ingredientes), nome, peso, preco, tipo: ingTipo });
   salvarDados();
@@ -2313,17 +2899,32 @@ function removerIngrediente(id) {
   const i = ingredientes.find(x => x.id === id);
   if (!i) return;
   confirmar('Remover ingrediente?', `"${i.nome}" será removido das receitas que o usam.`, () => {
+    const snapshotIng = JSON.parse(JSON.stringify(ingredientes));
+    const snapshotRec = JSON.parse(JSON.stringify(receitas));
     ingredientes = ingredientes.filter(x => x.id !== id);
     receitas.forEach(r => { r.itens = r.itens.filter(it => it.ingId !== id); });
     salvarDados();
     renderIngredientes();
-    toast('Removido');
+    renderReceitas();
+    toast(`${i.nome} removido`, '', {
+      acao: 'Desfazer',
+      onAcao: () => {
+        ingredientes = snapshotIng;
+        receitas = snapshotRec;
+        salvarDados();
+        renderIngredientes();
+        renderReceitas();
+        toast('Restaurado', 'sucesso');
+      }
+    });
   }, 'Remover', 'perigo');
 }
 
 function renderIngredientes() {
   const div = document.getElementById('ingredientes-lista');
+  const wrapBusca = document.getElementById('busca-wrap-ingredientes');
   if (ingredientes.length === 0) {
+    if (wrapBusca) wrapBusca.style.display = 'none';
     div.innerHTML = emptyState(
       'Nenhum ingrediente ainda',
       'Use o formulário acima pra cadastrar seu primeiro: frango, aipim, azeite, vinagre — qualquer coisa que entra nos seus caldos.'
@@ -2331,8 +2932,22 @@ function renderIngredientes() {
     proximoPasso('prox-ingredientes', 0);
     return;
   }
+  if (wrapBusca) wrapBusca.style.display = ingredientes.length > 5 ? '' : 'none';
+  const termo = (document.getElementById('busca-ingredientes')?.value || '').trim().toLowerCase();
+  const lista = termo
+    ? ingredientes.filter(i => i.nome.toLowerCase().includes(termo))
+    : ingredientes;
+
+  if (lista.length === 0) {
+    div.innerHTML = `<div class="busca-vazia">Nenhum ingrediente encontrado pra "${esc(termo)}".</div>`;
+    proximoPasso('prox-ingredientes', ingredientes.length,
+      ingredientes.length === 1 ? 'ingrediente cadastrado' : 'ingredientes cadastrados',
+      'Agora cadastre as <strong>embalagens</strong>.', 'Ir pra Embalagens', 'embalagens');
+    return;
+  }
+
   let html = '<div class="cadastro-lista">';
-  ingredientes.forEach(i => {
+  lista.forEach(i => {
     const cg = i.preco / i.peso;
     const u = UNIDADES[i.tipo || 'solido'].base;
     html += `<div class="cadastro-item">
@@ -2359,12 +2974,12 @@ function renderIngredientes() {
 // ==================== EMBALAGENS ====================
 function adicionarEmbalagem() {
   const nome = document.getElementById('emb-nome').value.trim();
-  const unidades = parseFloat(document.getElementById('emb-unid').value);
-  const preco = parseFloat(document.getElementById('emb-preco').value);
+  const unidades = parseNum(document.getElementById('emb-unid').value);
+  const preco = parseNum(document.getElementById('emb-preco').value);
 
   if (!nome) return toast('Informe o tipo', 'erro');
   if (!unidades || unidades <= 0) return toast('Informe quantas unidades', 'erro');
-  if (isNaN(preco) || preco < 0) return toast('Informe o valor pago', 'erro');
+  if (isNaN(preco) || preco <= 0) return toast('O valor pago precisa ser maior que zero', 'erro');
 
   embalagens.push({ id: novoId(embalagens), nome, unidades, preco });
   salvarDados();
@@ -2382,19 +2997,34 @@ function removerEmbalagem(id) {
   const e = embalagens.find(x => x.id === id);
   if (!e) return;
   confirmar('Remover embalagem?', `"${e.nome}" será removida das receitas que a usam.`, () => {
+    const snapshotEmb = JSON.parse(JSON.stringify(embalagens));
+    const snapshotRec = JSON.parse(JSON.stringify(receitas));
     embalagens = embalagens.filter(x => x.id !== id);
     receitas.forEach(r => {
       if (r.embalagensUsadas) r.embalagensUsadas = r.embalagensUsadas.filter(eu => eu.embId !== id);
     });
     salvarDados();
     renderEmbalagens();
-    toast('Removido');
+    renderReceitas();
+    toast(`${e.nome} removida`, '', {
+      acao: 'Desfazer',
+      onAcao: () => {
+        embalagens = snapshotEmb;
+        receitas = snapshotRec;
+        salvarDados();
+        renderEmbalagens();
+        renderReceitas();
+        toast('Restaurado', 'sucesso');
+      }
+    });
   }, 'Remover', 'perigo');
 }
 
 function renderEmbalagens() {
   const div = document.getElementById('embalagens-lista');
+  const wrapBusca = document.getElementById('busca-wrap-embalagens');
   if (embalagens.length === 0) {
+    if (wrapBusca) wrapBusca.style.display = 'none';
     const dica = ingredientes.length === 0
       ? 'Cadastre primeiro alguns Ingredientes — depois volte aqui pras embalagens.'
       : 'Use o formulário acima pra cadastrar seu primeiro item: pote 500ml, tampa, sacola, talher descartável...';
@@ -2402,8 +3032,22 @@ function renderEmbalagens() {
     proximoPasso('prox-embalagens', 0);
     return;
   }
+  if (wrapBusca) wrapBusca.style.display = embalagens.length > 5 ? '' : 'none';
+  const termo = (document.getElementById('busca-embalagens')?.value || '').trim().toLowerCase();
+  const lista = termo
+    ? embalagens.filter(e => e.nome.toLowerCase().includes(termo))
+    : embalagens;
+
+  if (lista.length === 0) {
+    div.innerHTML = `<div class="busca-vazia">Nenhuma embalagem encontrada pra "${esc(termo)}".</div>`;
+    proximoPasso('prox-embalagens', embalagens.length,
+      embalagens.length === 1 ? 'embalagem cadastrada' : 'embalagens cadastradas',
+      'Tudo pronto pra montar sua primeira receita.', 'Ir pra Receitas', 'receitas');
+    return;
+  }
+
   let html = '<div class="cadastro-lista">';
-  embalagens.forEach(e => {
+  lista.forEach(e => {
     const cu = e.preco / e.unidades;
     html += `<div class="cadastro-item">
       <div>
@@ -2428,6 +3072,17 @@ function renderEmbalagens() {
 
 // ==================== RECEITAS ====================
 function novaReceita(opts = {}) {
+  // Guardrail: se o usuário clicar em "Criar Nova Receita" sem ter
+  // ingredientes ou embalagens, oferecer um caminho claro
+  if (opts.fromClick && ingredientes.length === 0) {
+    confirmar(
+      'Antes de criar uma receita...',
+      'Você precisa primeiro cadastrar os ingredientes que vão na panela. Quer ir pra aba Ingredientes agora?',
+      () => irPara('ingredientes'),
+      'Ir pra Ingredientes'
+    );
+    return;
+  }
   receitaAtual = vazia();
   document.getElementById('receita-titulo').textContent = 'Nova Receita';
   document.getElementById('receita-nome').value = '';
@@ -2472,11 +3127,15 @@ function carregarReceita(id) {
 
 function adicionarLinhaIngrediente() {
   if (ingredientes.length === 0) {
-    toast('Cadastre ingredientes primeiro', 'erro');
-    irPara('ingredientes');
+    confirmar(
+      'Você ainda não tem ingredientes',
+      'Pra montar uma receita, primeiro cadastre o que vai na panela (frango, aipim, azeite, temperos...). Quer ir agora pra aba Ingredientes?',
+      () => irPara('ingredientes'),
+      'Ir pra Ingredientes'
+    );
     return;
   }
-  receitaAtual.itens.push({ ingId: ingredientes[0].id, qtd: 100 });
+  receitaAtual.itens.push({ ingId: ingredientes[0].id, qtd: 100, unit: 'b' });
   renderIngredientesReceita();
   recalcularReceita();
 }
@@ -2488,21 +3147,49 @@ function removerLinhaIngrediente(idx) {
 }
 
 function atualizarItem(idx, campo, valor) {
-  if (campo === 'ingId') receitaAtual.itens[idx].ingId = parseInt(valor);
-  if (campo === 'qtd') receitaAtual.itens[idx].qtd = parseFloat(valor) || 0;
-  // Atualiza só a célula de custo dessa linha — sem rerender (preserva foco do input)
   const item = receitaAtual.itens[idx];
+  if (campo === 'ingId') {
+    item.ingId = parseInt(valor);
+    item.unit = 'b'; // volta pra unidade base ao trocar ingrediente
+  }
+  if (campo === 'qtd') {
+    const ing = ingredientes.find(i => i.id === item.ingId);
+    const fator = ing ? UNIDADES[ing.tipo || 'solido'].fatorGrande : 1000;
+    const v = parseNum(valor) || 0;
+    // converte pra unidade base (g/ml) antes de armazenar
+    item.qtd = (item.unit === 'a') ? v * fator : v;
+  }
+  // Atualiza só a célula de custo dessa linha — sem rerender (preserva foco do input)
   const ing = ingredientes.find(i => i.id === item.ingId);
   const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
   const linhas = document.querySelectorAll('#receita-ingredientes .receita-item:not(.header-row)');
   if (linhas[idx]) {
     linhas[idx].querySelector('.custo-cell').textContent = brlPrec(custo);
-    // se trocou o ingrediente, a unidade pode ter mudado (g ↔ ml)
+    // se trocou o ingrediente, atualiza labels das pills e reseta pra base
     if (campo === 'ingId') {
-      const u = ing ? UNIDADES[ing.tipo || 'solido'].base : 'g';
-      const sfx = linhas[idx].querySelector('.input-suffix');
-      if (sfx) sfx.textContent = u;
+      const u = ing ? UNIDADES[ing.tipo || 'solido'] : UNIDADES.solido;
+      const pillA = linhas[idx].querySelector('.unit-pill-a');
+      const pillB = linhas[idx].querySelector('.unit-pill-b');
+      if (pillA) { pillA.textContent = u.grande; pillA.classList.remove('active'); }
+      if (pillB) { pillB.textContent = u.base;   pillB.classList.add('active'); }
     }
+  }
+  recalcularReceita();
+}
+
+function atualizarItemUnit(idx, slot) {
+  const item = receitaAtual.itens[idx];
+  const ing = ingredientes.find(i => i.id === item.ingId);
+  const u = ing ? UNIDADES[ing.tipo || 'solido'] : UNIDADES.solido;
+  item.unit = slot;
+  const linhas = document.querySelectorAll('#receita-ingredientes .receita-item:not(.header-row)');
+  if (linhas[idx]) {
+    linhas[idx].querySelector('.unit-pill-a').classList.toggle('active', slot === 'a');
+    linhas[idx].querySelector('.unit-pill-b').classList.toggle('active', slot === 'b');
+    const input = linhas[idx].querySelector('input[inputmode="decimal"]');
+    if (input) input.value = slot === 'a'
+      ? parseFloat((item.qtd / u.fatorGrande).toPrecision(6))
+      : item.qtd;
   }
   recalcularReceita();
 }
@@ -2521,16 +3208,23 @@ function renderIngredientesReceita() {
   receitaAtual.itens.forEach((item, idx) => {
     const ing = ingredientes.find(i => i.id === item.ingId);
     const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
-    const u = ing ? UNIDADES[ing.tipo || 'solido'].base : 'g';
+    const u = ing ? UNIDADES[ing.tipo || 'solido'] : UNIDADES.solido;
+    const unit = item.unit || 'b';
+    const displayQtd = unit === 'a'
+      ? parseFloat((item.qtd / u.fatorGrande).toPrecision(6))
+      : item.qtd;
     let opts = '';
     ingredientes.forEach(i => {
       opts += `<option value="${i.id}" ${i.id === item.ingId ? 'selected' : ''}>${esc(i.nome)}</option>`;
     });
     html += `<div class="receita-item">
       <select onchange="atualizarItem(${idx}, 'ingId', this.value)">${opts}</select>
-      <div class="input-wrap has-suffix">
-        <input type="number" min="0" step="any" value="${item.qtd}" placeholder="0" oninput="atualizarItem(${idx}, 'qtd', this.value)">
-        <span class="input-suffix">${u}</span>
+      <div class="receita-qty-group">
+        <input type="text" inputmode="decimal" value="${displayQtd}" placeholder="0" oninput="atualizarItem(${idx}, 'qtd', this.value)">
+        <div class="receita-unit-pills">
+          <button type="button" class="unit-pill unit-pill-a ${unit === 'a' ? 'active' : ''}" onclick="atualizarItemUnit(${idx}, 'a')">${u.grande}</button>
+          <button type="button" class="unit-pill unit-pill-b ${unit === 'b' ? 'active' : ''}" onclick="atualizarItemUnit(${idx}, 'b')">${u.base}</button>
+        </div>
       </div>
       <button class="btn-icon" onclick="removerLinhaIngrediente(${idx})" aria-label="Remover">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
@@ -2544,8 +3238,12 @@ function renderIngredientesReceita() {
 // ==================== EMBALAGENS NA RECEITA ====================
 function adicionarLinhaEmbalagem() {
   if (embalagens.length === 0) {
-    toast('Cadastre embalagens primeiro', 'erro');
-    irPara('embalagens');
+    confirmar(
+      'Você ainda não tem embalagens',
+      'Embalagens são os potes, tampas, sacolas, colheres — tudo que vai junto com o caldo. Quer cadastrar agora?',
+      () => irPara('embalagens'),
+      'Ir pra Embalagens'
+    );
     return;
   }
   receitaAtual.embalagensUsadas.push({ embId: embalagens[0].id, qtd: 1 });
@@ -2561,7 +3259,7 @@ function removerLinhaEmbalagem(idx) {
 
 function atualizarEmb(idx, campo, valor) {
   if (campo === 'embId') receitaAtual.embalagensUsadas[idx].embId = parseInt(valor);
-  if (campo === 'qtd') receitaAtual.embalagensUsadas[idx].qtd = parseFloat(valor) || 0;
+  if (campo === 'qtd') receitaAtual.embalagensUsadas[idx].qtd = parseNum(valor) || 0;
   // Atualiza só a célula de custo — preserva foco
   const item = receitaAtual.embalagensUsadas[idx];
   const emb = embalagens.find(e => e.id === item.embId);
@@ -2593,7 +3291,7 @@ function renderEmbalagensReceita() {
     html += `<div class="receita-item">
       <select onchange="atualizarEmb(${idx}, 'embId', this.value)">${opts}</select>
       <div class="input-wrap has-suffix">
-        <input type="number" min="0" step="any" value="${item.qtd}" placeholder="0" oninput="atualizarEmb(${idx}, 'qtd', this.value)">
+        <input type="text" inputmode="decimal" value="${item.qtd}" placeholder="0" oninput="atualizarEmb(${idx}, 'qtd', this.value)">
         <span class="input-suffix">un</span>
       </div>
       <button class="btn-icon" onclick="removerLinhaEmbalagem(${idx})" aria-label="Remover">
@@ -2661,9 +3359,9 @@ function calcularReceita(r) {
 }
 
 function recalcularReceita() {
-  receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
+  receitaAtual.metaLucro = parseNum(document.getElementById('meta-lucro').value) || 0;
   receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
-  receitaAtual.rendimento = Math.max(1, parseInt(document.getElementById('receita-rendimento').value) || 1);
+  receitaAtual.rendimento = Math.max(1, parseInteiro(document.getElementById('receita-rendimento').value) || 1);
 
   const c = calcularReceita(receitaAtual);
 
@@ -2690,17 +3388,27 @@ function recalcularReceita() {
   const ilu = document.getElementById('preco-ifood-lucro');
   ilu.textContent = brl(c.lucroIfood);
   ilu.className = 'v ' + (c.lucroIfood >= 0 ? 'positivo' : 'negativo');
+
+  // Atualiza memória de cálculo se estiver aberta
+  const memoBal = document.getElementById('calc-memoria-balcao');
+  const memoIfo = document.getElementById('calc-memoria-ifood');
+  if ((memoBal && memoBal.classList.contains('aberto')) ||
+      (memoIfo && memoIfo.classList.contains('aberto'))) {
+    renderMemoriaCalculo();
+  }
 }
 
 function salvarReceita() {
   const nome = document.getElementById('receita-nome').value.trim();
   if (!nome) return toast('Informe o nome do caldo', 'erro');
   if (receitaAtual.itens.length === 0) return toast('Adicione ao menos 1 ingrediente', 'erro');
+  const _calc = calcularReceita(receitaAtual);
+  if (_calc.custoTotal <= 0) return toast('Informe a quantidade de cada ingrediente — custo está zerado', 'erro');
 
   receitaAtual.nome = nome;
-  receitaAtual.metaLucro = parseFloat(document.getElementById('meta-lucro').value) || 0;
+  receitaAtual.metaLucro = parseNum(document.getElementById('meta-lucro').value) || 0;
   receitaAtual.vendeIfood = document.getElementById('vende-ifood').checked;
-  receitaAtual.rendimento = Math.max(1, parseInt(document.getElementById('receita-rendimento').value) || 1);
+  receitaAtual.rendimento = Math.max(1, parseInteiro(document.getElementById('receita-rendimento').value) || 1);
 
   if (receitaAtual.id === null) {
     receitaAtual.id = novoId(receitas);
@@ -2720,11 +3428,24 @@ function salvarReceita() {
 function excluirReceita() {
   if (receitaAtual.id === null) return;
   const nome = receitaAtual.nome;
+  const idAlvo = receitaAtual.id;
   confirmar('Excluir receita?', `"${nome}" será removida permanentemente.`, () => {
-    receitas = receitas.filter(r => r.id !== receitaAtual.id);
+    const snapshot = JSON.parse(JSON.stringify(receitas));
+    receitas = receitas.filter(r => r.id !== idAlvo);
     salvarDados();
     novaReceita();
-    toast(nome + ' excluído');
+    renderReceitas();
+    toast(`${nome} excluída`, '', {
+      acao: 'Desfazer',
+      onAcao: () => {
+        receitas = snapshot;
+        salvarDados();
+        renderReceitas();
+        const restaurada = receitas.find(r => r.id === idAlvo);
+        if (restaurada) carregarReceita(idAlvo);
+        toast('Restaurada', 'sucesso');
+      }
+    });
   }, 'Excluir', 'perigo');
 }
 
@@ -2748,8 +3469,23 @@ function renderReceitas() {
     proximoPasso('prox-receitas', 0);
     return;
   }
+  // Mostra/esconde busca conforme volume e aplica filtro
+  const wrapBusca = document.getElementById('busca-wrap-receitas');
+  if (wrapBusca) wrapBusca.style.display = receitas.length > 4 ? '' : 'none';
+  const termo = (document.getElementById('busca-receitas')?.value || '').trim().toLowerCase();
+  const listaFiltrada = termo
+    ? receitas.filter(r => r.nome.toLowerCase().includes(termo))
+    : receitas;
+
+  if (listaFiltrada.length === 0) {
+    div.innerHTML = `<div class="busca-vazia">Nenhuma receita encontrada pra "${esc(termo)}".</div>`;
+    proximoPasso('prox-receitas', receitas.length, receitas.length === 1 ? 'receita cadastrada' : 'receitas cadastradas',
+      'Veja o resumo completo no <strong>Painel</strong>.', 'Ir pro Painel', 'painel');
+    return;
+  }
+
   let html = '<div class="receitas-grid">';
-  receitas.forEach(r => {
+  listaFiltrada.forEach(r => {
     const c = calcularReceita(r);
     const ativa = receitaAtual.id === r.id ? 'editing' : '';
     const preco = r.vendeIfood ? c.precoIfood : c.precoBalcao;
@@ -2757,6 +3493,11 @@ function renderReceitas() {
     const canalClass = r.vendeIfood ? 'ifood-ativo' : '';
     const rendInfo = c.rendimento > 1 ? ` · Rende ${c.rendimento} potes` : '';
     html += `<div class="receita-card ${ativa}" onclick="carregarReceita(${r.id})">
+      <div class="receita-card-acoes">
+        <button type="button" onclick="event.stopPropagation();duplicarReceita(${r.id})" aria-label="Duplicar receita" title="Duplicar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>
+        </button>
+      </div>
       <div>
         <div class="receita-nome">${esc(r.nome)}</div>
         <div class="receita-meta">Custo ${brl(c.custoTotal)}/pote · Meta ${r.metaLucro}%${rendInfo}</div>
@@ -2866,7 +3607,9 @@ function exportarDados() {
   a.download = `delicaldos-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('delicaldos_ultimo_backup', new Date().toISOString());
   toast('Backup baixado', 'sucesso');
+  atualizarAvisoBackup();
 }
 function importarDados(evt) {
   const arq = evt.target.files[0];
@@ -2932,10 +3675,250 @@ function inicializarTutorial() {
   }
 }
 
+// ==================== LEMBRETE DE BACKUP ====================
+const DIAS_PARA_AVISO_BACKUP = 7;
+
+function temDados() {
+  return ingredientes.length > 0 || embalagens.length > 0 || receitas.length > 0;
+}
+
+function diasDesdeUltimoBackup() {
+  const ultimo = localStorage.getItem('delicaldos_ultimo_backup');
+  if (!ultimo) return null; // nunca fez backup
+  const ms = Date.now() - new Date(ultimo).getTime();
+  return Math.floor(ms / (1000 * 60 * 60 * 24));
+}
+
+function atualizarAvisoBackup() {
+  const aviso = document.getElementById('backup-aviso');
+  if (!aviso) return;
+
+  if (!temDados()) {
+    aviso.classList.add('hidden');
+    return;
+  }
+
+  const adiadoAte = parseInt(localStorage.getItem('delicaldos_backup_adiado_ate') || '0', 10);
+  if (Date.now() < adiadoAte) {
+    aviso.classList.add('hidden');
+    return;
+  }
+
+  const dias = diasDesdeUltimoBackup();
+  const titulo = document.getElementById('backup-aviso-titulo');
+  const desc = document.getElementById('backup-aviso-desc');
+
+  if (dias === null) {
+    titulo.textContent = 'Faça seu primeiro backup';
+    desc.textContent = 'Você já tem dados cadastrados. Baixe um arquivo de backup pra não perder se algo acontecer com o celular.';
+    aviso.classList.remove('hidden');
+  } else if (dias >= DIAS_PARA_AVISO_BACKUP) {
+    titulo.textContent = `Faz ${dias} dias desde seu último backup`;
+    desc.textContent = 'Vale a pena baixar um novo arquivo pra manter suas receitas seguras.';
+    aviso.classList.remove('hidden');
+  } else {
+    aviso.classList.add('hidden');
+  }
+}
+
+function exportarDadosDoAviso() {
+  exportarDados();
+}
+
+function adiarBackup() {
+  const tresDias = 3 * 24 * 60 * 60 * 1000;
+  localStorage.setItem('delicaldos_backup_adiado_ate', String(Date.now() + tresDias));
+  document.getElementById('backup-aviso').classList.add('hidden');
+  toast('Lembramos em 3 dias');
+}
+
+// ==================== MEMÓRIA DE CÁLCULO (transparência iFood/Balcão) ====================
+function alternarMemoriaCalculo(canal) {
+  const c = canal || 'ifood';
+  const btn = document.getElementById('calc-toggle-' + c);
+  const memo = document.getElementById('calc-memoria-' + c);
+  if (!btn || !memo) return;
+  const aberto = btn.classList.toggle('aberto');
+  memo.classList.toggle('aberto', aberto);
+  btn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+  memo.setAttribute('aria-hidden', aberto ? 'false' : 'true');
+  if (aberto) renderMemoriaCalculo();
+}
+
+function renderMemoriaCalculo() {
+  const c = calcularReceita(receitaAtual);
+  const memoBal = document.getElementById('calc-memoria-balcao');
+  const memoIfo = document.getElementById('calc-memoria-ifood');
+
+  if (memoBal) {
+    const meta = receitaAtual.metaLucro || 0;
+    memoBal.innerHTML = `
+      <div class="calc-passo"><span class="formula">Custo por pote</span><span class="resultado">${brl(c.custoTotal)}</span></div>
+      <div class="calc-passo"><span class="formula">Meta de lucro</span><span class="resultado">${pct(meta)}</span></div>
+      <div class="calc-divisor"></div>
+      <div class="calc-passo"><span class="formula">${brl(c.custoTotal)} × (1 + ${pct(meta)})</span><span class="resultado">${brl(c.precoBalcao)}</span></div>
+      <div class="calc-passo calc-final"><span class="formula">= Preço de venda balcão</span><span class="resultado">${brl(c.precoBalcao)}</span></div>
+      <div class="calc-passo"><span class="formula">Lucro = preço − custo</span><span class="resultado">${brl(c.lucroBalcao)}</span></div>
+      <span class="calc-nota">A meta de lucro é aplicada sobre o custo: você gasta R$ X e quer ganhar Y% em cima.</span>
+    `;
+  }
+
+  if (memoIfo) {
+    const p = config.ifoodPct / 100;
+    if (p >= 1) {
+      memoIfo.innerHTML = `<span class="calc-nota">A comissão do iFood está em 100% ou mais — impossível calcular um preço lucrativo. Ajuste em <strong>Ajustes → Taxa do iFood</strong>.</span>`;
+      return;
+    }
+    memoIfo.innerHTML = `
+      <div class="calc-passo"><span class="formula">Lucro alvo (mesmo do balcão)</span><span class="resultado">${brl(c.lucroBalcao)}</span></div>
+      <div class="calc-passo"><span class="formula">Custo por pote</span><span class="resultado">${brl(c.custoTotal)}</span></div>
+      <div class="calc-passo"><span class="formula">Taxa fixa iFood</span><span class="resultado">${brl(config.ifoodFixa)}</span></div>
+      <div class="calc-passo"><span class="formula">Comissão iFood</span><span class="resultado">${pct(config.ifoodPct)}</span></div>
+      <div class="calc-divisor"></div>
+      <div class="calc-passo"><span class="formula">(${brl(c.custoTotal)} + ${brl(c.lucroBalcao)} + ${brl(config.ifoodFixa)}) ÷ (1 − ${pct(config.ifoodPct)})</span><span class="resultado">${brl(c.precoIfood)}</span></div>
+      <div class="calc-passo calc-final"><span class="formula">= Preço a cobrar no iFood</span><span class="resultado">${brl(c.precoIfood)}</span></div>
+      <div class="calc-passo"><span class="formula">Você recebe (depois das taxas)</span><span class="resultado">${brl(c.recebeIfood)}</span></div>
+      <div class="calc-passo"><span class="formula">Lucro líquido</span><span class="resultado">${brl(c.lucroIfood)}</span></div>
+      <span class="calc-nota">Por que dividir por (1 − comissão)? Porque o iFood tira a porcentagem em cima do preço final. Pra você ficar com o lucro do balcão depois do desconto, é preciso "engordar" o preço antes.</span>
+    `;
+  }
+}
+
+// ==================== PWA: SERVICE WORKER + INSTALL PROMPT ====================
+let deferredInstallPrompt = null;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      // silencioso — app funciona sem SW
+    });
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.classList.add('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.classList.remove('show');
+  toast('App instalado!', 'sucesso');
+});
+
+function instalarApp() {
+  if (!deferredInstallPrompt) {
+    // iOS / fallback: mostra instrução
+    const ehIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (ehIos) {
+      confirmar('Instalar no iPhone',
+        'No Safari: toque no botão Compartilhar (□↑) e escolha "Adicionar à Tela de Início".',
+        () => {}, 'Entendi');
+    } else {
+      confirmar('Instalar app',
+        'No menu do navegador (⋮), escolha "Instalar app" ou "Adicionar à tela inicial".',
+        () => {}, 'Entendi');
+    }
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('install-btn').classList.remove('show');
+  });
+}
+
+// ==================== DICAS CONTEXTUAIS POR ABA ====================
+const ABAS_DICA = ['ingredientes', 'embalagens', 'painel', 'config'];
+
+function fecharDicaAba(aba) {
+  const el = document.getElementById('dica-' + aba);
+  if (el) el.classList.add('hidden');
+  localStorage.setItem('delicaldos_dica_' + aba, '1');
+}
+
+function inicializarDicasAbas() {
+  ABAS_DICA.forEach(aba => {
+    const visto = localStorage.getItem('delicaldos_dica_' + aba);
+    const el = document.getElementById('dica-' + aba);
+    if (el && visto === '1') el.classList.add('hidden');
+  });
+}
+
+function restaurarDicas() {
+  ABAS_DICA.forEach(aba => {
+    localStorage.removeItem('delicaldos_dica_' + aba);
+    const el = document.getElementById('dica-' + aba);
+    if (el) el.classList.remove('hidden');
+  });
+  localStorage.removeItem('delicaldos_tutorial_visto');
+  const banner = document.getElementById('tutorial-banner');
+  if (banner) banner.classList.remove('hidden');
+  toast('Dicas restauradas', 'sucesso');
+}
+
+// ==================== BUSCA ====================
+function filtrarLista(tipo) {
+  // atualiza visibilidade do botão "limpar"
+  const input = document.getElementById('busca-' + tipo);
+  const limpar = document.getElementById('busca-limpar-' + tipo);
+  if (limpar) limpar.classList.toggle('show', !!(input && input.value));
+
+  if (tipo === 'ingredientes') renderIngredientes();
+  else if (tipo === 'embalagens') renderEmbalagens();
+  else if (tipo === 'receitas') renderReceitas();
+}
+
+function limparBusca(tipo) {
+  const input = document.getElementById('busca-' + tipo);
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  filtrarLista(tipo);
+}
+
+// ==================== TOOLTIPS EXPLICATIVOS ====================
+const TIPS = {
+  margem: {
+    titulo: 'O que é "Meta de lucro"?',
+    texto: 'É quanto você quer ganhar por pote, em porcentagem do custo. Exemplo: se o custo de um pote é R$ 10 e você coloca meta de 60%, o app cobra R$ 16 (R$ 6 de lucro). Quanto maior a meta, mais alto o preço — então olhe o mercado pra equilibrar lucro e venda.'
+  },
+  comissao: {
+    titulo: 'O que é "Comissão do iFood"?',
+    texto: 'É a porcentagem que o iFood desconta de cada pedido que você vende pela plataforma. Costuma ser ~12% (entrega própria) ou ~23% (entrega pelo iFood). Quanto mais alta a comissão, mais o preço no app precisa subir pra você manter o mesmo lucro do balcão. Confira sua porcentagem no Portal do Parceiro do iFood.'
+  }
+};
+
+function mostrarTip(qual) {
+  const t = TIPS[qual];
+  if (!t) return;
+  confirmar(t.titulo, t.texto, () => {}, 'Entendi');
+}
+
+// ==================== DUPLICAR RECEITA ====================
+function duplicarReceita(id) {
+  const orig = receitas.find(r => r.id === id);
+  if (!orig) return;
+  const copia = JSON.parse(JSON.stringify(orig));
+  copia.id = novoId(receitas);
+  copia.nome = orig.nome + ' (cópia)';
+  receitas.push(copia);
+  salvarDados();
+  renderReceitas();
+  carregarReceita(copia.id);
+  toast('Receita duplicada — edite à vontade', 'sucesso');
+}
+
 // ==================== INIT ====================
 carregarDados();
 renderTudo();
 inicializarTutorial();
+inicializarDicasAbas();
+atualizarAvisoBackup();
 </script>
 
 </body>

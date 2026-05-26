@@ -1,0 +1,27 @@
+{
+  "name": "Delicaldos — Precificação",
+  "short_name": "Delicaldos",
+  "description": "Calculadora de precificação para caldos artesanais. Calcule custo, margem e preço de venda com taxa do iFood.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF5EE",
+  "theme_color": "#5C1E22",
+  "lang": "pt-BR",
+  "categories": ["food", "business", "productivity"],
+  "icons": [
+    {
+      "src": "delicaldos-logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "delicaldos-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
