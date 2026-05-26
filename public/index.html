@@ -1857,8 +1857,12 @@ function carregarDados() {
 // ==================== UTILS ====================
 const brl = v => 'R$ ' + (Number(v) || 0).toFixed(2).replace('.', ',');
 const brlNum = v => (Number(v) || 0).toFixed(2).replace('.', ',');
-// Versão com 3 decimais — usada em custos unitários pequenos (por grama, por unidade, proporcionais)
-const brlPrec = v => 'R$ ' + (Number(v) || 0).toFixed(3).replace('.', ',');
+// Mostra 3 casas só quando a terceira tem valor; senão, 2 casas (evita "R$ 1,800")
+const brlPrec = v => {
+  const n = Number(v) || 0;
+  const s3 = n.toFixed(3);
+  return 'R$ ' + (s3.endsWith('0') ? n.toFixed(2) : s3).replace('.', ',');
+};
 const pct = v => (Number(v) || 0).toFixed(1).replace('.', ',') + '%';
 const novoId = arr => arr.length === 0 ? 1 : Math.max(...arr.map(x => x.id)) + 1;
 const esc = s => { const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML; };
