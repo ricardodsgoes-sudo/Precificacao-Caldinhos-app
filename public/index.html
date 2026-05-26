@@ -506,6 +506,53 @@ select { cursor: pointer; appearance: none;
 .input-wrap.has-prefix input { padding-left: 38px; }
 .input-wrap.has-suffix input { padding-right: 36px; }
 
+/* ---- Toggle de tipo do ingrediente (Sólido / Líquido) ---- */
+.tipo-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+  background: var(--paper-2);
+  border: 1px solid var(--paper-3);
+  border-radius: var(--r-md);
+  padding: 4px;
+}
+.tipo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  cursor: pointer;
+  color: var(--ink-2);
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+  box-shadow: none;
+  min-height: 56px;
+}
+.tipo-btn .tipo-nome {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: -0.005em;
+}
+.tipo-btn .tipo-ex {
+  font-size: 0.74rem;
+  color: var(--ink-3);
+  font-weight: 400;
+  font-style: italic;
+}
+.tipo-btn:hover:not(.active) { background: var(--paper-3); filter: none; box-shadow: none; }
+.tipo-btn.active {
+  background: var(--paper);
+  color: var(--bordo);
+  box-shadow: var(--shadow-1);
+}
+.tipo-btn.active .tipo-nome { color: var(--bordo); }
+.tipo-btn.active .tipo-ex { color: var(--ink-2); }
+
 /* ---- Pills de unidade dentro do input (kg/g) ---- */
 .input-wrap.has-suffix-pills input { padding-right: 88px; }
 .input-wrap .unit-pills {
@@ -1650,14 +1697,28 @@ button.btn-icon:hover { background: var(--negativo-bg); color: var(--negativo); 
         <span class="hint">Pode ser o nome que você usa na cozinha mesmo.</span>
       </div>
 
+      <div class="form-group">
+        <label>Tipo</label>
+        <div class="tipo-toggle" role="group" aria-label="Tipo do ingrediente">
+          <button type="button" class="tipo-btn active" id="ing-tipo-solido" onclick="setIngTipo('solido')">
+            <span class="tipo-nome">Sólido</span>
+            <span class="tipo-ex">frango, aipim, carne...</span>
+          </button>
+          <button type="button" class="tipo-btn" id="ing-tipo-liquido" onclick="setIngTipo('liquido')">
+            <span class="tipo-nome">Líquido</span>
+            <span class="tipo-ex">azeite, leite, vinagre...</span>
+          </button>
+        </div>
+      </div>
+
       <div class="form-grid-2">
         <div class="form-group">
-          <label>Peso do pacote</label>
+          <label id="ing-peso-label">Peso do pacote</label>
           <div class="input-wrap has-suffix-pills">
             <input type="number" id="ing-peso" placeholder="1,5" min="0" step="any" oninput="previewIng()">
-            <div class="unit-pills" role="group" aria-label="Unidade do peso">
-              <button type="button" class="unit-pill active" id="ing-peso-unit-kg" onclick="setIngPesoUnit('kg')">kg</button>
-              <button type="button" class="unit-pill" id="ing-peso-unit-g" onclick="setIngPesoUnit('g')">g</button>
+            <div class="unit-pills" role="group" aria-label="Unidade">
+              <button type="button" class="unit-pill active" id="ing-peso-unit-a" onclick="setIngPesoUnit('a')">kg</button>
+              <button type="button" class="unit-pill" id="ing-peso-unit-b" onclick="setIngPesoUnit('b')">g</button>
             </div>
           </div>
           <span class="hint" id="ing-peso-hint">Quanto pesa o pacote inteiro que você compra.</span>
@@ -1874,6 +1935,7 @@ function carregarDados() {
       if (!r.embalagensUsadas) r.embalagensUsadas = [];
       if (!r.rendimento || r.rendimento < 1) r.rendimento = 1;
     });
+    ingredientes.forEach(i => { if (!i.tipo) i.tipo = 'solido'; });
   } catch (e) {
     ingredientes = [...INGREDIENTES_PADRAO];
     embalagens = [...EMBALAGENS_PADRAO];
@@ -1990,32 +2052,64 @@ function renderConfig() {
   document.getElementById('cfg-ifood-fixa').value = config.ifoodFixa;
 }
 
-// ==================== UNIDADE DO PESO (kg/g) ====================
-let ingPesoUnit = 'kg'; // padrão: kg (mais natural pra carnes, aipim, etc.)
+// ==================== TIPO + UNIDADE DO INGREDIENTE ====================
+// 'solido' usa kg/g (base = g). 'liquido' usa L/ml (base = ml).
+// O campo `peso` no ingrediente sempre guarda no base (g ou ml).
+let ingTipo = 'solido';
+let ingUnit = 'kg'; // 'kg' ou 'g' pra solido; 'L' ou 'ml' pra liquido
 
-function setIngPesoUnit(unit) {
-  if (unit !== 'kg' && unit !== 'g') return;
-  ingPesoUnit = unit;
-  document.getElementById('ing-peso-unit-kg').classList.toggle('active', unit === 'kg');
-  document.getElementById('ing-peso-unit-g').classList.toggle('active', unit === 'g');
-  document.getElementById('ing-peso').placeholder = unit === 'kg' ? '1,5' : '1500';
+const UNIDADES = {
+  solido:  { grande: 'kg', pequena: 'g',  fatorGrande: 1000, base: 'g'  },
+  liquido: { grande: 'L',  pequena: 'ml', fatorGrande: 1000, base: 'ml' }
+};
+
+function setIngTipo(tipo) {
+  if (tipo !== 'solido' && tipo !== 'liquido') return;
+  ingTipo = tipo;
+  document.getElementById('ing-tipo-solido').classList.toggle('active', tipo === 'solido');
+  document.getElementById('ing-tipo-liquido').classList.toggle('active', tipo === 'liquido');
+
+  const u = UNIDADES[tipo];
+  document.getElementById('ing-peso-unit-a').textContent = u.grande;
+  document.getElementById('ing-peso-unit-b').textContent = u.pequena;
+  document.getElementById('ing-peso-label').textContent = tipo === 'solido' ? 'Peso do pacote' : 'Volume do pacote';
+  document.getElementById('ing-peso-hint').textContent = tipo === 'solido'
+    ? 'Quanto pesa o pacote inteiro que você compra.'
+    : 'Quanto vem no pacote/garrafa que você compra.';
+
+  ingUnit = 'a'; // sempre volta pra unidade grande quando troca o tipo
+  setIngPesoUnit('a');
+}
+
+function setIngPesoUnit(slot) {
+  if (slot !== 'a' && slot !== 'b') return;
+  ingUnit = slot;
+  document.getElementById('ing-peso-unit-a').classList.toggle('active', slot === 'a');
+  document.getElementById('ing-peso-unit-b').classList.toggle('active', slot === 'b');
+  const u = UNIDADES[ingTipo];
+  document.getElementById('ing-peso').placeholder = slot === 'a'
+    ? (ingTipo === 'solido' ? '1,5' : '1')
+    : (ingTipo === 'solido' ? '1500' : '500');
   previewIng();
 }
 
-function getIngPesoGramas() {
+function getIngPesoBase() {
   const v = parseFloat(document.getElementById('ing-peso').value);
   if (!v || v <= 0) return 0;
-  return ingPesoUnit === 'kg' ? v * 1000 : v;
+  return ingUnit === 'a' ? v * UNIDADES[ingTipo].fatorGrande : v;
 }
+
+function getIngPesoGramas() { return getIngPesoBase(); } // compat
 
 // ==================== PREVIEW (campos autoexplicativos) ====================
 function previewIng() {
-  const peso = getIngPesoGramas();
+  const peso = getIngPesoBase();
   const preco = parseFloat(document.getElementById('ing-preco').value);
   const p = document.getElementById('ing-preview');
   if (peso > 0 && preco > 0) {
     const por100 = (preco / peso) * 100;
-    p.innerHTML = `Vai custar <strong>${brlPrec(por100)}</strong> a cada 100&thinsp;g de ${escNomeIng()}.`;
+    const u = UNIDADES[ingTipo].base;
+    p.innerHTML = `Vai custar <strong>${brlPrec(por100)}</strong> a cada 100&thinsp;${u} de ${escNomeIng()}.`;
     p.classList.add('show');
   } else {
     p.classList.remove('show');
@@ -2042,14 +2136,16 @@ function previewEmb() {
 // ==================== INGREDIENTES ====================
 function adicionarIngrediente() {
   const nome = document.getElementById('ing-nome').value.trim();
-  const peso = getIngPesoGramas();
+  const peso = getIngPesoBase();
   const preco = parseFloat(document.getElementById('ing-preco').value);
 
   if (!nome) return toast('Informe o nome', 'erro');
-  if (!peso || peso <= 0) return toast('Informe o peso do pacote', 'erro');
+  if (!peso || peso <= 0) {
+    return toast(ingTipo === 'solido' ? 'Informe o peso do pacote' : 'Informe o volume do pacote', 'erro');
+  }
   if (isNaN(preco) || preco < 0) return toast('Informe o valor pago', 'erro');
 
-  ingredientes.push({ id: novoId(ingredientes), nome, peso, preco });
+  ingredientes.push({ id: novoId(ingredientes), nome, peso, preco, tipo: ingTipo });
   salvarDados();
   renderIngredientes();
   toast(nome + ' adicionado', 'sucesso');
@@ -2082,12 +2178,13 @@ function renderIngredientes() {
   let html = '<div class="cadastro-lista">';
   ingredientes.forEach(i => {
     const cg = i.preco / i.peso;
+    const u = UNIDADES[i.tipo || 'solido'].base;
     html += `<div class="cadastro-item">
       <div>
         <div class="nome">${esc(i.nome)}</div>
-        <div class="meta">${i.peso} g · ${brl(i.preco)} no pacote</div>
+        <div class="meta">${i.peso} ${u} · ${brl(i.preco)} no pacote</div>
       </div>
-      <div class="preco">${brlPrec(cg * 100)} <div class="preco-unit">/ 100 g</div></div>
+      <div class="preco">${brlPrec(cg * 100)} <div class="preco-unit">/ 100 ${u}</div></div>
       <button class="btn-icon" onclick="removerIngrediente(${i.id})" aria-label="Remover">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6"/></svg>
       </button>
@@ -2226,7 +2323,15 @@ function atualizarItem(idx, campo, valor) {
   const ing = ingredientes.find(i => i.id === item.ingId);
   const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
   const linhas = document.querySelectorAll('#receita-ingredientes .receita-item:not(.header-row)');
-  if (linhas[idx]) linhas[idx].querySelector('.custo-cell').textContent = brlPrec(custo);
+  if (linhas[idx]) {
+    linhas[idx].querySelector('.custo-cell').textContent = brlPrec(custo);
+    // se trocou o ingrediente, a unidade pode ter mudado (g ↔ ml)
+    if (campo === 'ingId') {
+      const u = ing ? UNIDADES[ing.tipo || 'solido'].base : 'g';
+      const sfx = linhas[idx].querySelector('.input-suffix');
+      if (sfx) sfx.textContent = u;
+    }
+  }
   recalcularReceita();
 }
 
@@ -2238,12 +2343,13 @@ function renderIngredientesReceita() {
   }
   let html = `<div class="receita-item header-row">
     <div class="col-label">Ingrediente</div>
-    <div class="col-label center">Qtd (g)</div>
+    <div class="col-label center">Quantidade</div>
     <div class="col-label right">Custo</div>
   </div>`;
   receitaAtual.itens.forEach((item, idx) => {
     const ing = ingredientes.find(i => i.id === item.ingId);
     const custo = ing ? (item.qtd / ing.peso) * ing.preco : 0;
+    const u = ing ? UNIDADES[ing.tipo || 'solido'].base : 'g';
     let opts = '';
     ingredientes.forEach(i => {
       opts += `<option value="${i.id}" ${i.id === item.ingId ? 'selected' : ''}>${esc(i.nome)}</option>`;
@@ -2252,7 +2358,7 @@ function renderIngredientesReceita() {
       <select onchange="atualizarItem(${idx}, 'ingId', this.value)">${opts}</select>
       <div class="input-wrap has-suffix">
         <input type="number" min="0" step="any" value="${item.qtd}" placeholder="0" oninput="atualizarItem(${idx}, 'qtd', this.value)">
-        <span class="input-suffix">g</span>
+        <span class="input-suffix">${u}</span>
       </div>
       <button class="btn-icon" onclick="removerLinhaIngrediente(${idx})" aria-label="Remover">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
