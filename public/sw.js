@@ -2,7 +2,7 @@
 // Estratégia: network-first para HTML (sempre puxa atualizações),
 // cache-first para assets estáticos (logo, manifest).
 
-const VERSAO = 'delicaldos-v1';
+const VERSAO = 'delicaldos-v2';
 const ASSETS = [
   './',
   './index.html',

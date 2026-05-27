@@ -33,26 +33,28 @@ Cada etapa se baseia nas anteriores. Comece pela esquerda e vá avançando.
 
 ## 1️⃣ Ingredientes
 
-**O que é:** Cadastrar cada ingrediente que você usa (farinha, cenoura, sal, etc.) e quanto custa.
+**O que é:** Cadastrar cada ingrediente ou acompanhamento que você usa (farinha, cenoura, sal, cheiro-verde, torrada, etc.) e quanto custa.
 
 ### Como usar:
 
 1. **Clique em "Ingredientes"** (primeira aba, esquerda)
 2. **Clique em "+ Adicionar Ingrediente"**
 3. **Preencha:**
-   - **Nome**: ex. "Cenoura"
-   - **Preço por unidade**: quanto custa (ex. `2.50` reais por kg)
-   - **Unidade**: kg, litro, unidade, etc.
+   - **Nome**: ex. "Cenoura" ou "Torrada"
+   - **Tipo**: sólido, líquido ou unidade
+   - **Quantidade comprada**: peso, volume ou quantidade do pacote inteiro
+   - **Quanto você pagou**: o valor total do pacote
 
 4. **Clique "Salvar"**
 
 ### Exemplo prático:
 
-| Nome | Preço | Unidade |
-|------|-------|---------|
-| Cenoura | 2.50 | kg |
-| Cebola | 1.80 | kg |
-| Sal | 1.20 | kg |
+| Nome | Quantidade comprada | Preço pago |
+|------|---------------------|------------|
+| Cenoura | 1 kg | R$ 2.50 |
+| Cebola | 1 kg | R$ 1.80 |
+| Sal | 1 kg | R$ 1.20 |
+| Torrada | 20 un | R$ 8.00 |
 
 **💡 Dica:** Atualize regularmente os preços quando fizerem promoção no fornecedor. Os cálculos mudam automaticamente.
 
@@ -98,7 +100,7 @@ Cada etapa se baseia nas anteriores. Comece pela esquerda e vá avançando.
 4. **Adicione os Ingredientes:**
    - Clique "+ Adicionar Ingrediente"
    - Selecione o ingrediente (ex. "Cenoura")
-   - Digite quanto usa (ex. `0.200` kg para 200g)
+   - Digite quanto usa (ex. `200` g, `500` ml ou `1` un)
    - Clique ✓
 
 5. **Repita** para todos os ingredientes da receita
@@ -113,7 +115,8 @@ Cada etapa se baseia nas anteriores. Comece pela esquerda e vá avançando.
 | Cebola | 0.080 kg |
 | Carne moída | 0.150 kg |
 | Sal | 0.010 kg |
-| **Total** | **0.340 kg** |
+| Torrada | 1 un |
+| **Itens pesados** | **0.340 kg** |
 
 **O app calcula automaticamente:**
 - ✅ Custo de ingredientes: R$ 0.92
@@ -221,13 +224,14 @@ Se trocar de celular ou navegador, você pode exportar seus dados:
 
 ## 🎯 Exemplo Completo — Do Zero ao Resultado
 
-Vamos fazer um caldo de caldo de abóbora do zero:
+Vamos fazer um caldo de abóbora do zero:
 
 ### Passo 1: Adicione ingredientes
 1. Abóbora — R$ 3.00/kg
 2. Cebola — R$ 1.80/kg
 3. Alho — R$ 5.00/kg
 4. Sal — R$ 1.20/kg
+5. Torrada — R$ 8.00/20 un
 
 ### Passo 2: Registre a embalagem
 1. Pote 500ml — R$ 0.80
@@ -238,15 +242,16 @@ Vamos fazer um caldo de caldo de abóbora do zero:
 - 0.050 kg de cebola (R$ 0.09)
 - 0.010 kg de alho (R$ 0.05)
 - 0.005 kg de sal (R$ 0.01)
-- **Custo de ingredientes: R$ 0.90**
+- 1 un de torrada (R$ 0.40)
+- **Custo de ingredientes: R$ 1.30**
 - Embalagem: R$ 0.80
-- **CUSTO TOTAL: R$ 1.70**
+- **CUSTO TOTAL: R$ 2.10**
 
 ### Passo 4: Defina o preço no Painel
 - Margem de lucro: 80%
-- Preço base: R$ 3.06
-- Sem iFood: venda por R$ 3.06
-- Com iFood (15%): venda por R$ 3.60 (você recebe R$ 3.06)
+- Preço base: R$ 3.78
+- Sem iFood: venda por R$ 3.78
+- Com iFood (15%): venda por R$ 4.45 (você recebe R$ 3.78)
 
 ---
 
